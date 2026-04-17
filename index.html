@@ -966,6 +966,72 @@ a{color:var(--ink)}
 }
 
 /* ══════════════════════════════════════════
+   CONTACT SECTION — restrained editorial CTA
+══════════════════════════════════════════ */
+.contact-link{
+  display:inline-flex;
+  align-items:baseline;
+  gap:14px;
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(22px,3.4vw,32px);
+  color:var(--ink);
+  text-decoration:none;
+  padding:8px 0 6px;
+  border-bottom:2px solid var(--ink);
+  transition:color .15s,border-color .15s,gap .25s;
+  margin:8px 0 28px;
+  letter-spacing:-.005em;
+}
+.contact-link:hover,.contact-link:focus{
+  color:var(--red);
+  border-bottom-color:var(--red);
+  gap:20px;
+}
+.contact-link .contact-arrow{
+  font-family:var(--sans);
+  font-weight:400;
+  font-size:.8em;
+  transition:transform .25s;
+}
+.contact-link:hover .contact-arrow{transform:translateX(4px)}
+.contact-chips{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px 10px;
+  margin-top:8px;
+  font-family:var(--sans);
+}
+.chip{
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink3);
+  padding:6px 12px;
+  border:1px solid var(--rule);
+  border-radius:999px;
+}
+
+/* Colophon contact line */
+.colophon-contact{
+  margin-top:14px;
+  font-style:normal;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink3);
+  letter-spacing:.02em;
+}
+.colophon-contact a{
+  color:var(--ink2);
+  text-decoration:underline;
+  text-underline-offset:2px;
+  text-decoration-thickness:1px;
+}
+.colophon-contact a:hover{color:var(--red)}
+
+/* ══════════════════════════════════════════
    FOOTER
 ══════════════════════════════════════════ */
 footer{
@@ -1328,6 +1394,29 @@ footer{
   </div>
 </section>
 
+<hr class="divider">
+
+<!-- ════════════ CONTACT ════════════ -->
+<section id="contact" aria-labelledby="contact-h">
+  <div class="s-block" style="text-align:center">
+    <span class="s-label">Reach the editors</span>
+    <h2 class="s-hed" id="contact-h" style="font-size:clamp(26px,4vw,38px)">Have a number we should look at?</h2>
+    <p class="s-dek" style="margin-left:auto;margin-right:auto">This project is a living document. If you spot an error, want a chart added, have a dataset to suggest, or simply want to argue with a framing — write in.</p>
+
+    <a href="mailto:lacunae.us@gmail.com?subject=Feedback%20on%20The%20Gap" class="contact-link">
+      lacunae.us@gmail.com
+      <span class="contact-arrow" aria-hidden="true">→</span>
+    </a>
+
+    <div class="contact-chips" aria-label="Examples of useful feedback">
+      <span class="chip">Corrections</span>
+      <span class="chip">Data sources</span>
+      <span class="chip">Chart ideas</span>
+      <span class="chip">Topics to cover next</span>
+    </div>
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -1340,6 +1429,7 @@ footer{
   <div class="colophon">
     <span class="colophon-label">Colophon</span>
     Built by Claude, an AI assistant from Anthropic, with editorial direction from a human collaborator. The visual language is indebted to the interactive features of <em>The New York Times</em>, whose work in data journalism set the standard this project aims toward. Published as an educational exploration of public data — not as financial, legal, or policy advice.
+    <div class="colophon-contact">Correspondence: <a href="mailto:lacunae.us@gmail.com">lacunae.us@gmail.com</a></div>
   </div>
 </footer>
 
