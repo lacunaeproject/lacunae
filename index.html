@@ -3,537 +3,881 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lacunae — The Gaps in Power</title>
+<title>The Gap — U.S. Wealth Inequality, 2025</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
-   DESIGN TOKENS — ink on newsprint
+   NYT INTERACTIVE — design tokens
+   White paper. One signal color. One serif.
 ══════════════════════════════════════════ */
 :root{
-  /* Palette: one signal color, rest is ink */
-  --ink:#0a0a0a;
-  --ink2:#1a1a1a;
-  --ink3:#2d2d2d;
-  --paper:#faf8f4;
-  --paper2:#f3f0eb;
-  --paper3:#ede9e1;
-  --paper4:#e4dfd5;
-  --rule:#c8c0b2;
-  --rule2:#ddd8cf;
-  /* AAA on --paper (#faf8f4): 7:1 minimum */
-  --muted:#4a4540;   /* was #857e76 — now 9.1:1 on paper */
-  --dim:#5c5650;     /* was #b0a89e — now 7.8:1 on paper */
-  --red:#a62921;     /* was #c0392b — darkened for AAA on paper: 7.3:1 */
-  --red2:#c0392b;    /* used on dark bg only — 4.6:1 on black ✓ */
-  --amber:#7a4000;   /* was #b5620a — 8.1:1 on paper */
-  --navy:#0f2a44;    /* was #1a3a5c — 11.2:1 on paper */
-  --forest:#0f3320;  /* was #1a4a2e — 11.8:1 on paper */
-  --focus:#a62921;
-  --ease:cubic-bezier(0.4,0,0.2,1);
-  --ease-out:cubic-bezier(0,0,0.2,1);
+  --ink:#121212;
+  --ink2:#333;
+  --ink3:#666;
+  --muted:#888;
+  --dim:#aaa;
+  --paper:#fff;
+  --paper2:#f7f7f7;
+  --rule:#e2e2e2;
+  --rule2:#ccc;
+  --red:#d0021b;     /* NYT red — used only for emphasis */
+  --serif:'Playfair Display','Cheltenham',Georgia,serif;
+  --body:'Source Serif 4',Georgia,serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
 }
 
-/* ── RESET ───────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;font-size:18px}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-size:18px;scroll-behavior:smooth}
 body{
-  font-family:'Source Serif 4',Georgia,serif;
-  background:var(--paper);color:var(--ink);
-  line-height:1.65;min-width:320px;overflow-x:hidden;
+  font-family:var(--body);
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.6;
+  min-width:320px;
+  overflow-x:hidden;
 }
-:focus-visible{
-  outline:3px solid var(--focus);
-  outline-offset:4px;
-  border-radius:2px;
-}
-/* On dark backgrounds the red focus ring needs a white halo */
-nav :focus-visible,
-.statement-ink :focus-visible,
-.statement-red :focus-visible,
-footer :focus-visible{
-  outline:3px solid #fff;
-  outline-offset:3px;
-  box-shadow:0 0 0 6px var(--focus);
-}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
 
-/* ── SKIP ────────────────────────────────── */
-.skip{
-  position:absolute;top:-80px;left:16px;
-  background:var(--red);color:#fff;
-  padding:10px 18px;
-  font-family:'DM Mono',monospace;font-size:14px;font-weight:500;
-  z-index:9999;transition:top .2s;
-  border:2px solid #fff;
-  text-decoration:none;
-}
+.skip{position:absolute;top:-80px;left:16px;background:var(--ink);color:#fff;padding:8px 14px;font-family:var(--sans);font-size:13px;z-index:9999;transition:top .2s}
 .skip:focus{top:8px}
 
-@media(prefers-reduced-motion:reduce){
-  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  .ttrack{animation:none!important}
-  .reveal{opacity:1!important;transform:none!important;transition:none!important}
-  .scroll-arrow{animation:none!important}
-  #cg-hint-anim{animation:none!important}
-  .bfill,.rbar,.bbar-fill{transition:none!important}
-  #pf{transition:none!important}
-}
-
-/* ── SCROLL REVEAL ───────────────────────── */
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .85s var(--ease-out),transform .85s var(--ease-out)}
-.reveal.visible{opacity:1;transform:translateY(0)}
+a{color:var(--ink)}
 
 /* ══════════════════════════════════════════
-   NAV — newspaper masthead energy
+   TICKER — kept, redesigned NYT-yellow
 ══════════════════════════════════════════ */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  background:var(--ink);
-  border-bottom:1px solid var(--ink3);
-  height:56px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;
+.ticker-wrap{
+  overflow:hidden;
+  background:#fff7d6;
+  border-bottom:1px solid #f0e3a8;
+  padding:9px 0;
 }
-.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
-.logo-wordmark{
-  font-family:'Playfair Display',serif;font-size:20px;font-weight:700;
-  color:#fff;letter-spacing:.02em;
-}
-.logo-sep{width:1px;height:16px;background:rgba(255,255,255,.2)}
-.logo-sub{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.75);letter-spacing:.1em;text-transform:uppercase}
-.nav-right{display:flex;align-items:center;gap:8px}
-.nav-links{display:none;position:fixed;top:56px;left:0;right:0;background:var(--ink2);border-bottom:1px solid var(--ink3);flex-direction:column;padding:8px;gap:2px;z-index:199}
-.nav-links.open{display:flex}
-.nav-link{padding:10px 14px;font-size:14px;font-family:'DM Mono',monospace;color:#fff;text-decoration:none;border-radius:4px;min-height:44px;display:flex;align-items:center;letter-spacing:.04em;transition:color .15s,background .15s}
-.nav-link:hover{color:#fff;background:rgba(255,255,255,.15)}
-.hamburger{background:none;border:1px solid rgba(255,255,255,.5);border-radius:4px;color:#fff;cursor:pointer;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .2s}
-.hamburger:hover{border-color:#fff;background:rgba(255,255,255,.1)}
-.hamburger span{display:block;width:15px;height:1.5px;background:currentColor;transition:all .25s}
-.hamburger[aria-expanded=true] span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
-.hamburger[aria-expanded=true] span:nth-child(2){opacity:0}
-.hamburger[aria-expanded=true] span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px)}
-@media(min-width:640px){
-  .hamburger{display:none}
-  .nav-links{display:flex;position:static;flex-direction:row;padding:0;border:none;background:transparent;gap:0}
-  .nav-link{min-height:auto;padding:6px 12px;font-size:12px}
-}
-.theme-btn{background:none;border:1px solid rgba(255,255,255,.5);border-radius:4px;color:#fff;cursor:pointer;padding:5px 12px;font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:5px;min-height:44px;transition:all .2s;letter-spacing:.04em}
-.theme-btn:hover{border-color:#fff;background:rgba(255,255,255,.1)}
-
-/* reading progress */
-#pb{position:fixed;top:56px;left:0;right:0;height:2px;background:transparent;z-index:198}
-#pf{height:100%;background:var(--red);width:0;transition:width .08s linear}
-
-/* ══════════════════════════════════════════
-   TICKER — data wire
-══════════════════════════════════════════ */
-.ticker-wrap{overflow:hidden;background:#f5c518;border-bottom:1px solid #d4a800;padding:8px 0;margin-top:56px}
 .ticker-wrap:hover .ttrack{animation-play-state:paused}
-.ttrack{display:flex;gap:56px;white-space:nowrap;animation:tick 55s linear infinite}
+.ttrack{display:flex;gap:48px;white-space:nowrap;animation:tick 60s linear infinite}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.ti{font-size:12px;font-family:'DM Mono',monospace;color:rgba(0,0,0,0.5);flex-shrink:0;letter-spacing:.05em}
-.ti b{color:#0a0a0a;font-weight:500}
+.ti{
+  font-size:12px;font-family:var(--sans);
+  color:#7a6a1a;flex-shrink:0;letter-spacing:.01em;
+  font-weight:400;
+}
+.ti b{color:#3a2f00;font-weight:600}
 
 /* ══════════════════════════════════════════
-   HERO — full-page editorial statement
+   ARTICLE LAYOUT — narrow column, NYT-width
 ══════════════════════════════════════════ */
-#s1{
-  min-height:100svh;
-  background:var(--ink);
-  display:flex;flex-direction:column;justify-content:flex-end;
-  padding:80px 0 0;
-  position:relative;overflow:hidden;
+.col{
+  max-width:600px;
+  margin:0 auto;
+  padding:0 20px;
 }
-/* Large red number behind headline — pure NYT Upshot energy */
-.hero-bg-number{
-  position:absolute;
-  top:50%;left:50%;transform:translate(-50%,-55%);
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(180px,38vw,480px);
-  color:rgba(192,57,43,.07);
-  line-height:1;white-space:nowrap;
-  pointer-events:none;user-select:none;
-  letter-spacing:-.05em;
+.col-wide{
+  max-width:780px;
+  margin:0 auto;
+  padding:0 20px;
 }
-.hero-inner{
-  max-width:900px;margin:0 auto;padding:0 28px 0;
-  position:relative;z-index:2;
+
+/* ══════════════════════════════════════════
+   ARTICLE HEADER — NYT interactive style
+══════════════════════════════════════════ */
+.masthead{
+  border-bottom:1px solid var(--rule);
+  padding:14px 20px;
+  text-align:center;
+  font-family:var(--serif);
+  font-size:13px;
+  font-style:italic;
+  color:var(--ink2);
+  letter-spacing:.02em;
+}
+.masthead .section{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ink);
+  font-style:normal;
+  margin-right:6px;
+}
+
+#hero{
+  padding:56px 20px 48px;
+  text-align:center;
 }
 .hero-kicker{
-  font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.16em;
-  color:var(--red);text-transform:uppercase;margin-bottom:20px;
-  display:flex;align-items:center;gap:12px;
-  opacity:0;animation:fadein .8s .1s var(--ease-out) forwards;
+  font-family:var(--sans);
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--red);
+  font-weight:600;
+  margin-bottom:24px;
 }
-.hero-kicker::before{content:'';display:block;width:28px;height:1px;background:var(--red)}
 .hero-h1{
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(48px,9vw,110px);
-  line-height:.96;letter-spacing:-.03em;
-  color:#fff;margin-bottom:28px;
-  opacity:0;animation:fadein .8s .25s var(--ease-out) forwards;
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(36px,6vw,64px);
+  line-height:1.05;
+  letter-spacing:-.015em;
+  color:var(--ink);
+  margin:0 auto 24px;
+  max-width:720px;
 }
-.hero-h1 em{font-style:italic;color:var(--red2)}
 .hero-dek{
-  font-size:clamp(17px,2vw,22px);color:rgba(255,255,255,.88);
-  font-weight:300;max-width:560px;line-height:1.65;
-  font-family:'Source Serif 4',serif;font-style:italic;
-  opacity:0;animation:fadein .8s .4s var(--ease-out) forwards;
-  margin-bottom:48px;
+  font-family:var(--body);
+  font-size:clamp(17px,2vw,20px);
+  color:var(--ink2);
+  font-weight:300;
+  font-style:italic;
+  line-height:1.55;
+  max-width:560px;
+  margin:0 auto 32px;
 }
-/* Stat row — horizontal rule with numbers, pure NYT */
+.byline{
+  font-family:var(--sans);
+  font-size:13px;
+  color:var(--ink3);
+  letter-spacing:.01em;
+  margin-bottom:6px;
+}
+.byline strong{font-weight:600;color:var(--ink2)}
+.dateline{
+  font-family:var(--sans);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* Hero summary stats — NYT thin hairline grid, no boxes */
 .hero-stats{
-  border-top:1px solid rgba(255,255,255,.12);
-  display:grid;grid-template-columns:repeat(4,1fr);
-  opacity:0;animation:fadein .8s .55s var(--ease-out) forwards;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  margin:48px auto 0;
+  padding:24px 0;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  max-width:780px;
 }
-@media(max-width:580px){.hero-stats{grid-template-columns:repeat(2,1fr)}}
-.hero-stat{
-  padding:28px 20px 24px;border-right:1px solid rgba(255,255,255,.08);
+@media(max-width:600px){
+  .hero-stats{grid-template-columns:repeat(2,1fr);gap:20px 0}
 }
-.hero-stat:last-child{border-right:none}
-.hs-val{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,44px);font-weight:700;line-height:1;margin-bottom:14px;color:#fff}
-.hs-lbl{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.85);letter-spacing:.07em;text-transform:uppercase;line-height:1.5}
-/* scroll cue */
-.hero-scroll-cue{
-  text-align:center;padding:20px;
-  font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.75);
-  letter-spacing:.12em;
-  opacity:0;animation:fadein .8s .9s var(--ease-out) forwards;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
+.hs{padding:0 16px;border-right:1px solid var(--rule);text-align:left}
+.hs:last-child{border-right:none}
+@media(max-width:600px){
+  .hs:nth-child(2){border-right:none}
 }
-.scroll-arrow{font-size:20px;animation:floatDown 1.6s ease-in-out infinite}
-@keyframes floatDown{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
-@keyframes fadein{to{opacity:1;transform:translateY(0)}}
-
-/* ══════════════════════════════════════════
-   TYPOGRAPHY SYSTEM — editorial
-══════════════════════════════════════════ */
-.section-rule{
-  width:100%;height:0;border:none;
-  border-top:2px solid var(--ink);
-  margin:0;
-}
-.section-rule.thin{border-top:1px solid var(--rule)}
-
-.s-block{padding:80px 28px;max-width:960px;margin:0 auto}
-
-.s-label{
-  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--red);margin-bottom:16px;display:block;
-}
-.s-hed{
-  font-family:'Playfair Display',serif;font-weight:700;
-  font-size:clamp(32px,6vw,68px);
-  line-height:1.02;letter-spacing:-.025em;margin-bottom:20px;
+.hs-val{
+  font-family:var(--serif);
+  font-size:clamp(26px,4vw,36px);
+  font-weight:700;
+  line-height:1;
+  margin-bottom:8px;
   color:var(--ink);
 }
-.s-hed em{font-style:italic}
+.hs-val.red{color:var(--red)}
+.hs-lbl{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  letter-spacing:.04em;
+  line-height:1.4;
+  text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════
+   SECTIONS — restrained editorial
+══════════════════════════════════════════ */
+.s-block{
+  padding:64px 20px;
+  max-width:600px;
+  margin:0 auto;
+}
+.s-block.wide{max-width:780px}
+
+.s-label{
+  font-family:var(--sans);
+  font-weight:600;
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:16px;
+  display:block;
+}
+.s-hed{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(28px,4.5vw,44px);
+  line-height:1.1;
+  letter-spacing:-.01em;
+  margin-bottom:18px;
+  color:var(--ink);
+}
 .s-dek{
-  font-family:'Source Serif 4',serif;font-size:clamp(17px,2vw,21px);
-  color:var(--muted);font-weight:300;font-style:italic;
-  line-height:1.6;max-width:600px;margin-bottom:40px;
+  font-family:var(--body);
+  font-size:clamp(17px,2vw,20px);
+  color:var(--ink2);
+  font-weight:300;
+  font-style:italic;
+  line-height:1.55;
+  margin-bottom:32px;
 }
 .s-body{
-  font-family:'Source Serif 4',serif;font-size:17px;
-  color:var(--muted);line-height:1.75;margin-bottom:28px;font-weight:300;
-  max-width:680px;
+  font-family:var(--body);
+  font-size:18px;
+  color:var(--ink);
+  line-height:1.65;
+  margin-bottom:24px;
 }
+.s-body em{font-style:italic}
+.s-body strong{font-weight:600}
 .s-note{
-  font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);
-  line-height:1.65;padding:16px 20px;
-  border-left:3px solid var(--paper4);
-  background:var(--paper2);margin-bottom:32px;
+  font-family:var(--sans);
+  font-size:13px;
+  color:var(--ink3);
+  line-height:1.55;
+  padding:14px 0 14px 16px;
+  border-left:2px solid var(--rule);
+  margin:24px 0;
+  font-style:normal;
 }
 
-/* ══════════════════════════════════════════
-   FULL-BLEED STATEMENT SECTIONS
-══════════════════════════════════════════ */
-/* Ink-black cinematic number */
-.statement-ink{
-  background:var(--ink);
-  padding:100px 28px;text-align:center;
-  position:relative;overflow:hidden;
-}
-.statement-ink .st-kicker{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.85);margin-bottom:20px}
-.statement-ink .st-number{
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(80px,18vw,200px);
-  line-height:.9;letter-spacing:-.04em;
-  display:block;margin-bottom:20px;
-}
-.statement-ink .st-text{
-  font-family:'Playfair Display',serif;font-style:italic;
-  font-size:clamp(20px,3vw,32px);color:rgba(255,255,255,.95);
-  max-width:600px;margin:0 auto;
-}
-.statement-ink .st-text em{color:#fff;font-style:normal}
-.statement-ink .st-sub{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.8);margin-top:16px;letter-spacing:.04em}
-
-/* Red alert band */
-.statement-red{
-  background:var(--red);padding:80px 28px;text-align:center;
-}
-.statement-red .st-kicker{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#fff;margin-bottom:16px}
-.statement-red .st-number{
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(72px,15vw,160px);color:#fff;
-  line-height:.9;letter-spacing:-.04em;display:block;margin-bottom:16px;
-}
-.statement-red .st-text{
-  font-family:'Playfair Display',serif;font-style:italic;
-  font-size:clamp(18px,2.5vw,28px);color:#fff;
-  max-width:580px;margin:0 auto;
-}
-.statement-red .st-text em{color:#fff;font-style:normal;font-weight:700}
-
-/* Paper quote */
-.statement-paper{
-  background:var(--paper3);padding:80px 28px;text-align:center;
-  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+/* Section divider — single hairline, lots of breathing room */
+.divider{
+  border:none;
+  border-top:1px solid var(--rule);
+  max-width:600px;
+  margin:0 auto;
 }
 
-/* ══════════════════════════════════════════
-   PULLQUOTE — editorial
-══════════════════════════════════════════ */
-.pq-wrap{
-  border-top:3px solid var(--ink);border-bottom:1px solid var(--rule);
-  padding:32px 0 28px;margin:48px 0;
+/* Pullquote — NYT style, no boxes, just rule */
+.pq{
+  border-top:2px solid var(--ink);
+  padding:24px 0 0;
+  margin:40px 0;
+  text-align:left;
 }
 .pq-text{
-  font-family:'Playfair Display',serif;font-style:italic;font-weight:400;
-  font-size:clamp(20px,3vw,30px);line-height:1.38;color:var(--ink);
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:400;
+  font-size:clamp(20px,2.6vw,26px);
+  line-height:1.35;
+  color:var(--ink);
 }
-.pq-attr{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);margin-top:16px;letter-spacing:.04em}
+.pq-attr{
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink3);
+  margin-top:14px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  font-weight:500;
+}
 
 /* ══════════════════════════════════════════
-   DATA CARDS — clean newsprint grid
+   STATS — flat, no card, just label + value
+   (replaces .data-grid card boxes)
 ══════════════════════════════════════════ */
-.data-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);margin:40px 0;border:1px solid var(--rule)}
-@media(min-width:700px){.data-grid{grid-template-columns:repeat(4,1fr)}}
-.data-card{background:var(--paper);padding:28px 22px;position:relative}
-.dc-lbl{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;line-height:1.4}
-.dc-val{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(26px,4.5vw,38px);line-height:1;margin-bottom:8px}
-.dc-sub{font-family:'Source Serif 4',serif;font-size:16px;color:var(--muted);line-height:1.6;font-weight:400}
-.src-btn{display:inline-flex;align-items:center;gap:4px;margin-top:12px;padding:6px 12px;border:2px solid var(--ink3);background:transparent;color:var(--ink);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s;letter-spacing:.04em;min-height:44px}
-.src-btn:hover,.src-btn:focus{border-color:var(--red);color:var(--red);background:var(--paper2)}
-.src-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:var(--ink);border:none;padding:16px;font-size:13px;font-family:'DM Mono',monospace;color:#fff;line-height:1.65;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-.src-popup.open{display:block}
-.src-popup a{color:#ffd580;text-decoration:underline}
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:32px 28px;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  padding:28px 0;
+  margin:40px 0;
+}
+@media(min-width:640px){
+  .stats-row{grid-template-columns:repeat(4,1fr);gap:0}
+  .stats-row .stat-item{padding:0 16px;border-right:1px solid var(--rule)}
+  .stats-row .stat-item:last-child{border-right:none}
+}
+.stat-item{padding:0}
+.stat-lbl{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:10px;
+  line-height:1.3;
+}
+.stat-val{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(28px,4vw,38px);
+  line-height:1;
+  margin-bottom:8px;
+  color:var(--ink);
+}
+.stat-val.red{color:var(--red)}
+.stat-sub{
+  font-family:var(--body);
+  font-size:14px;
+  color:var(--ink3);
+  line-height:1.45;
+  font-style:italic;
+}
 
 /* ══════════════════════════════════════════
-   WEALTH BARS — ink on paper
+   BARS — wealth distribution, thin & quiet
 ══════════════════════════════════════════ */
-.brow{margin-bottom:20px}
-.bmeta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px}
-.bname{font-family:'Source Serif 4',serif;font-size:17px;color:var(--ink)}
-.bpct{font-family:'Playfair Display',serif;font-size:clamp(20px,3vw,28px);font-weight:700}
-.btrack{background:var(--paper3);height:26px;overflow:hidden;position:relative;border:2px solid var(--rule)}
-.bfill{height:100%;width:0;transition:width 1.4s cubic-bezier(.34,1.1,.64,1)}
-/* Colorblind: add text label inside bar */
-.bfill-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-family:'DM Mono',monospace;color:#fff;font-weight:500;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.4)}
-.bsub{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:.03em}
+.bars{margin:32px 0}
+.brow{margin-bottom:22px}
+.bmeta{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:6px;
+  flex-wrap:wrap;
+  gap:4px;
+}
+.bname{
+  font-family:var(--body);
+  font-size:15px;
+  color:var(--ink);
+}
+.bname-sub{
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--muted);
+  margin-left:6px;
+}
+.bpct{
+  font-family:var(--serif);
+  font-size:18px;
+  font-weight:700;
+  color:var(--ink);
+}
+.btrack{
+  background:var(--paper2);
+  height:18px;
+  overflow:hidden;
+  position:relative;
+}
+.bfill{
+  height:100%;
+  width:0;
+  transition:width 1.2s cubic-bezier(.22,.61,.36,1);
+}
 
 /* ══════════════════════════════════════════
    DOT GRID
 ══════════════════════════════════════════ */
-.dgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:20px 0}
-@media(min-width:600px){.dgrid{grid-template-columns:repeat(20,1fr);gap:4px}}
-.dot{aspect-ratio:1;border-radius:50%;background:var(--paper3);cursor:pointer;transition:transform .15s,background .3s}
-.dot:hover,.dot:focus{transform:scale(1.5);z-index:2;outline:3px solid var(--ink);outline-offset:2px}
-.fbtns{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
-.fbtn{padding:10px 16px;font-size:14px;font-family:'DM Mono',monospace;cursor:pointer;border:2px solid var(--ink3);background:transparent;color:var(--ink);transition:all .15s;min-height:44px;display:flex;align-items:center;letter-spacing:.03em}
-.fbtn:hover{border-color:var(--ink);background:var(--paper2)}
-.fbtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.dinfo{min-height:44px;padding:12px 0;font-family:'Source Serif 4',serif;font-size:17px;color:var(--ink);line-height:1.65;font-style:italic}
-.legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px}
-.leg-item{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);letter-spacing:.04em}
-.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.2)}
-
-/* ══════════════════════════════════════════
-   TIMELINE
-══════════════════════════════════════════ */
-.tl-wrap{background:var(--paper2);border:1px solid var(--rule);padding:28px 20px 36px;min-height:160px}
-
-/* ══════════════════════════════════════════
-   RACE SECTION
-══════════════════════════════════════════ */
-.race-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:36px}
-@media(min-width:520px){.race-grid{grid-template-columns:1fr 1fr}}
-.race-card{padding:32px 26px;background:var(--paper)}
-.rc-lbl{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
-.rc-hh{font-family:'Source Serif 4',serif;font-size:17px;color:var(--muted);font-style:italic;margin-bottom:14px}
-.rc-pct{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(24px,4.5vw,36px);line-height:1;margin-top:10px}
-.rc-bar-wrap{background:var(--paper3);height:16px;overflow:hidden;border:2px solid var(--rule)}
-.rbar{height:100%;width:0;transition:width 1.4s var(--ease-out)}
-
-/* ══════════════════════════════════════════
-   BILLIONAIRES
-══════════════════════════════════════════ */
-.bbar-row{padding:12px 14px;cursor:pointer;transition:background .15s;min-height:48px;border-bottom:1px solid var(--rule2)}
-.bbar-row:hover,.bbar-row:focus{background:var(--paper2);outline:3px solid var(--focus);outline-offset:-3px}
-.bbar-meta{display:flex;justify-content:space-between;margin-bottom:6px;align-items:center}
-.bbar-name{font-family:'Source Serif 4',serif;font-size:17px;color:var(--ink)}
-.bbar-amount{font-family:'DM Mono',monospace;font-size:14px;color:var(--ink)}
-.bbar-track{background:var(--paper3);height:12px;overflow:hidden;border:1px solid var(--rule)}
-.bbar-fill{height:100%;width:0;transition:width 1.1s var(--ease-out)}
-.bil-box{border:1px solid var(--rule);margin-top:40px}
-.bil-box-head{padding:16px 20px;border-bottom:1px solid var(--rule);background:var(--paper2)}
-.bil-box-eyebrow{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
-.bil-box-body{padding:8px 6px}
-.bil-box-ctx{padding:16px 20px;border-top:1px solid var(--rule);font-family:'Source Serif 4',serif;font-size:17px;color:var(--muted);line-height:1.75;font-style:italic}
-
-/* ══════════════════════════════════════════
-   CHAMPAGNE GLASS
-══════════════════════════════════════════ */
-#cg-outer{position:relative;margin:0}
-#cg-scroll-hint{
-  text-align:center;padding:24px;
-  font-family:'DM Mono',monospace;font-size:12px;color:rgba(0,0,0,0.5);
-  letter-spacing:.1em;display:flex;align-items:center;justify-content:center;gap:10px;
-  transition:opacity .5s;background:var(--paper2);border-bottom:1px solid var(--rule);
+.dgrid{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:5px;
+  margin:24px 0;
+  max-width:520px;
 }
-#cg-hint-anim{animation:floatDown 1.4s ease-in-out infinite;display:inline-block;font-size:16px}
-#cg-sticky-wrap{
-  position:sticky;top:56px;height:calc(100svh - 56px);
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0;
-  padding:20px 24px 16px;background:#fff;z-index:5;
+@media(min-width:600px){
+  .dgrid{grid-template-columns:repeat(20,1fr);gap:4px}
+}
+.dot{
+  aspect-ratio:1;
+  border-radius:50%;
+  background:var(--paper2);
+  cursor:pointer;
+  transition:transform .12s,background .25s;
+}
+.dot:hover,.dot:focus{
+  transform:scale(1.4);
+  z-index:2;
+  outline:1.5px solid var(--ink);
+}
+.fbtns{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:20px 0 12px;
+}
+.fbtn{
+  padding:7px 13px;
+  font-size:12px;
+  font-family:var(--sans);
+  font-weight:500;
+  cursor:pointer;
+  border:1px solid var(--rule2);
+  background:transparent;
+  color:var(--ink2);
+  transition:all .15s;
+  letter-spacing:.01em;
+}
+.fbtn:hover{border-color:var(--ink);color:var(--ink)}
+.fbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dinfo{
+  min-height:44px;
+  padding:12px 0 0;
+  font-family:var(--body);
+  font-size:15px;
+  color:var(--ink2);
+  line-height:1.55;
+  font-style:italic;
+}
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin:16px 0 12px;
+}
+.leg-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink3);
+}
+.leg-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+/* ══════════════════════════════════════════
+   TIMELINE — minimal SVG container
+══════════════════════════════════════════ */
+.tl-wrap{
+  margin-top:20px;
+  padding:8px 24px 20px 8px;
+  min-height:160px;
+}
+.chart-source{
+  font-size:11px;
+  color:var(--ink3);
+  font-family:var(--sans);
+  margin-top:8px;
+  text-align:left;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════
+   RACE — flat, no boxed grid
+══════════════════════════════════════════ */
+.race-stack{margin:32px 0;display:flex;flex-direction:column;gap:32px}
+.race-row{
+  border-top:1px solid var(--rule);
+  padding-top:24px;
+}
+.race-row:first-child{border-top:1px solid var(--ink)}
+.race-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:8px;
+  flex-wrap:wrap;
+  gap:4px;
+}
+.race-name{
+  font-family:var(--body);
+  font-size:17px;
+  color:var(--ink);
+}
+.race-name strong{font-weight:600}
+.race-pct{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:24px;
+  color:var(--ink);
+}
+.race-bar-wrap{
+  background:var(--paper2);
+  height:14px;
+  overflow:hidden;
+}
+.rbar{
+  height:100%;
+  width:0;
+  transition:width 1.2s cubic-bezier(.22,.61,.36,1);
+}
+.race-detail{
+  font-family:var(--body);
+  font-size:14px;
+  color:var(--ink3);
+  margin-top:10px;
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.race-detail span{font-style:italic}
+.race-summary{
+  font-family:var(--body);
+  font-size:18px;
+  color:var(--ink);
+  line-height:1.65;
+  padding:24px 0 0;
+  border-top:1px solid var(--ink);
+  margin-top:16px;
+}
+.race-summary strong{font-weight:600}
+.race-summary .red{color:var(--red);font-weight:600}
+
+/* ══════════════════════════════════════════
+   BILLIONAIRES — thin rows, no chrome box
+══════════════════════════════════════════ */
+.bil-section{margin:32px 0}
+.bil-head{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+  font-weight:500;
+}
+.bbar-row{
+  padding:14px 0;
+  cursor:pointer;
+  transition:background .15s;
   border-bottom:1px solid var(--rule);
 }
-#cg-inner-row{
-  display:flex;align-items:center;justify-content:center;
-  gap:28px;flex:1;width:100%;min-height:0;
+.bbar-row:first-child{border-top:1px solid var(--ink)}
+.bbar-row:last-child{border-bottom:1px solid var(--ink)}
+.bbar-row:hover,.bbar-row:focus{
+  background:var(--paper2);
+  outline:none;
 }
-#cg-big-stat{
+.bbar-meta{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:6px;
+  align-items:center;
+}
+.bbar-name{
+  font-family:var(--body);
+  font-size:16px;
+  color:var(--ink);
+}
+.bbar-amount{
+  font-family:var(--serif);
+  font-size:17px;
+  font-weight:700;
+  color:var(--ink);
+}
+.bbar-track{
+  background:var(--paper2);
+  height:8px;
+  overflow:hidden;
+}
+.bbar-fill{
+  height:100%;
+  width:0;
+  background:var(--ink);
+  transition:width 1s cubic-bezier(.22,.61,.36,1);
+}
+.bil-ctx{
+  padding:20px 0 0;
+  font-family:var(--body);
+  font-size:15px;
+  color:var(--ink2);
+  line-height:1.7;
+  font-style:italic;
+}
+.bil-ctx strong{
+  font-style:normal;
+  font-weight:600;
+  color:var(--ink);
+  font-family:var(--serif);
+}
+
+/* ══════════════════════════════════════════
+   CHAMPAGNE GLASS — kept, quieted
+══════════════════════════════════════════ */
+#cg-outer{position:relative}
+#cg-scroll-hint{
   text-align:center;
-  flex-shrink:0;
-  padding-bottom:0;
-  margin-bottom:0;
+  padding:18px;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink3);
+  letter-spacing:.04em;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  transition:opacity .5s;
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
 }
-#cg-big-name{
-  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--dim);margin-bottom:3px;
+#cg-hint-anim{
+  animation:floatDown 1.4s ease-in-out infinite;
+  display:inline-block;
+  font-size:14px;
 }
-#cg-big-pct{
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(22px,3.5vw,42px);
-  line-height:1.1;white-space:nowrap;
-  transition:color .4s;
+@keyframes floatDown{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+#cg-sticky-wrap{
+  position:sticky;
+  top:0;
+  height:100svh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:#fff;
+  z-index:5;
 }
-#cg-canvas-wrap{position:relative;flex:1;max-width:380px;height:100%;display:flex;align-items:center;justify-content:center}
+#cg-stage-label{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  font-weight:500;
+  margin-bottom:6px;
+  transition:color .3s;
+}
+#cg-stage-pct{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(22px,3.6vw,32px);
+  line-height:1.1;
+  color:var(--ink);
+  margin-bottom:24px;
+  transition:color .3s;
+}
+#cg-canvas-wrap{
+  position:relative;
+  flex:0 1 auto;
+  width:100%;
+  max-width:340px;
+  height:min(60svh,460px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 #cg-canvas{display:block;max-width:100%;max-height:100%}
-#cg-overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 6px}
-#cg-label-top{display:none}
-#cg-group-name{display:none}
-#cg-group-pct{display:none}
-#cg-label-bottom{text-align:left}
-#cg-stat-main{font-family:'Source Serif 4',serif;font-size:clamp(13px,1.4vw,15px);color:var(--ink);line-height:1.5;margin-bottom:6px;font-weight:400;font-style:italic}
-#cg-stat-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.5;letter-spacing:.03em}
-#cg-progress-track{width:2px;height:min(calc(100svh - 200px),420px);background:var(--rule2);border-radius:1px;position:relative;flex-shrink:0}
-#cg-progress-fill{position:absolute;top:0;left:0;width:100%;background:var(--red);border-radius:1px;transition:height .08s}
-#cg-progress-thumb{position:absolute;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:var(--red);transition:top .08s;margin-top:-4px;box-shadow:0 0 0 3px #fff,0 0 0 4px var(--red)}
+#cg-stat-main{
+  font-family:var(--body);
+  font-size:clamp(14px,1.8vw,16px);
+  color:var(--ink);
+  line-height:1.55;
+  margin-top:24px;
+  font-style:italic;
+  text-align:center;
+  max-width:380px;
+}
+#cg-stat-sub{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  line-height:1.55;
+  letter-spacing:.04em;
+  text-align:center;
+  margin-top:8px;
+  max-width:380px;
+}
 #cg-scroll-space{height:500vh}
 
 /* ══════════════════════════════════════════
-   CALCULATOR
+   CALCULATOR — flat, hairline rules
 ══════════════════════════════════════════ */
-.calc-box{border:1px solid var(--rule);margin-top:32px}
-.calc-box-head{padding:20px 24px;border-bottom:1px solid var(--rule);background:var(--paper2)}
-.calc-fields{display:flex;gap:1px;background:var(--rule);border-bottom:1px solid var(--rule)}
-.cfield{flex:1;background:var(--paper);padding:20px 24px}
-.cfield label{display:block;font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;margin-bottom:8px;text-transform:uppercase}
+.calc-box{
+  margin:32px 0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+}
+.calc-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border-bottom:1px solid var(--rule);
+}
+.cfield{
+  padding:20px 16px;
+  border-right:1px solid var(--rule);
+}
+.cfield:last-child{border-right:none}
+.cfield label{
+  display:block;
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  letter-spacing:.06em;
+  margin-bottom:8px;
+  text-transform:uppercase;
+  font-weight:500;
+}
 .cfield input{
-  width:100%;padding:8px 0;background:transparent;
-  border:none;border-bottom:2px solid var(--ink);
-  color:var(--ink);font-size:22px;font-family:'Playfair Display',serif;font-weight:700;
-  outline:none;transition:border-color .2s;
+  width:100%;
+  padding:6px 0;
+  background:transparent;
+  border:none;
+  border-bottom:1.5px solid var(--ink);
+  color:var(--ink);
+  font-size:22px;
+  font-family:var(--serif);
+  font-weight:700;
+  outline:none;
+  transition:border-color .2s;
 }
 .cfield input:focus{border-bottom-color:var(--red)}
-.calc-results{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule)}
-@media(min-width:480px){.calc-results{grid-template-columns:1fr 1fr}}
-@media(min-width:768px){.calc-results{grid-template-columns:repeat(4,1fr)}}
-.cr{padding:20px 22px;background:var(--paper)}
-.crl{font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
-.crv{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(20px,3.5vw,28px);line-height:1;color:var(--ink)}
-.crs{font-family:'Source Serif 4',serif;font-size:14px;color:var(--dim);margin-top:5px;font-style:italic}
-.calc-bars{padding:24px;background:var(--paper);border-top:1px solid var(--rule)}
-.calc-narr{
-  padding:20px 24px;border-top:1px solid var(--rule);
-  font-family:'Source Serif 4',serif;font-size:16px;color:var(--muted);
-  line-height:1.75;font-style:italic;background:var(--paper2);
+.calc-results{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:0;
+  border-bottom:1px solid var(--rule);
 }
-.calc-hint{font-size:13px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:7px;letter-spacing:.03em;font-style:normal}
+@media(min-width:640px){
+  .calc-results{grid-template-columns:repeat(4,1fr)}
+}
+.cr{
+  padding:20px 16px;
+  border-right:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+}
+.cr:nth-child(2n){border-right:none}
+@media(min-width:640px){
+  .cr{border-bottom:none}
+  .cr:nth-child(2n){border-right:1px solid var(--rule)}
+  .cr:last-child{border-right:none}
+}
+.crl{
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--ink3);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+  font-weight:500;
+}
+.crv{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(20px,3vw,26px);
+  line-height:1;
+  color:var(--ink);
+}
+.crs{
+  font-family:var(--body);
+  font-size:13px;
+  color:var(--ink3);
+  margin-top:6px;
+  font-style:italic;
+}
+.calc-bars{
+  padding:24px 16px;
+}
+.calc-narr{
+  padding:18px 16px;
+  font-family:var(--body);
+  font-size:16px;
+  color:var(--ink);
+  line-height:1.65;
+  font-style:italic;
+  border-top:1px solid var(--rule);
+}
+.calc-hint{
+  font-size:12px;
+  color:var(--ink3);
+  font-family:var(--sans);
+  margin-top:6px;
+  letter-spacing:.01em;
+  font-style:normal;
+}
 
 /* ══════════════════════════════════════════
-   SOURCES ACCORDION
+   SOURCES — accordion, simple
 ══════════════════════════════════════════ */
-.sources-wrap{margin-top:40px;padding-top:20px;border-top:1px solid var(--rule)}
-.sources-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:2px solid var(--ink3);color:var(--ink);font-size:14px;font-family:'DM Mono',monospace;cursor:pointer;padding:12px 16px;min-height:44px;transition:all .15s;letter-spacing:.04em}
-.sources-btn:hover,.sources-btn:focus{border-color:var(--red);color:var(--red);background:var(--paper2)}
-.sources-btn .chevron{transition:transform .3s;font-size:12px}
+.sources-wrap{margin-top:32px}
+.sources-btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  background:transparent;
+  border:none;
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+  color:var(--ink2);
+  font-size:12px;
+  font-family:var(--sans);
+  font-weight:500;
+  cursor:pointer;
+  padding:14px 4px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  text-align:left;
+  transition:color .15s;
+}
+.sources-btn:hover{color:var(--ink)}
+.sources-btn .chevron{
+  transition:transform .3s;
+  font-size:11px;
+}
 .sources-btn[aria-expanded=true] .chevron{transform:rotate(180deg)}
-.sources-body{display:none;padding:12px 0 4px}
+.sources-body{display:none;padding:0}
 .sources-body.open{display:block}
-.src-link{display:block;padding:14px 16px;border:1px solid var(--rule);border-top:none;text-decoration:none;transition:background .15s}
-.src-link:first-child{border-top:1px solid var(--rule)}
-.src-link:hover,.src-link:focus{background:var(--paper2);outline:3px solid var(--focus);outline-offset:-3px}
-.src-link-title{font-family:'DM Mono',monospace;font-size:14px;color:var(--red);margin-bottom:4px;letter-spacing:.01em;text-decoration:underline}
-.src-link-desc{font-family:'Source Serif 4',serif;font-size:15px;color:var(--muted);line-height:1.6;font-style:italic}
+.src-link{
+  display:block;
+  padding:14px 4px;
+  border-bottom:1px solid var(--rule);
+  text-decoration:none;
+  transition:background .15s;
+}
+.src-link:hover{background:var(--paper2)}
+.src-link-title{
+  font-family:var(--sans);
+  font-size:13px;
+  color:var(--red);
+  margin-bottom:3px;
+  font-weight:500;
+}
+.src-link-desc{
+  font-family:var(--body);
+  font-size:14px;
+  color:var(--ink2);
+  line-height:1.5;
+  font-style:italic;
+}
 
 /* ══════════════════════════════════════════
    FOOTER
 ══════════════════════════════════════════ */
 footer{
-  background:var(--ink);
-  padding:56px 28px;text-align:center;
-  font-family:'DM Mono',monospace;font-size:13px;
-  color:rgba(255,255,255,.85);line-height:2;letter-spacing:.04em;
+  border-top:1px solid var(--ink);
+  padding:48px 20px;
+  margin-top:64px;
+  text-align:center;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--ink3);
+  line-height:1.8;
 }
-.foot-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:.02em}
-.foot-tag{color:rgba(255,255,255,.85);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
-
-/* ══════════════════════════════════════════
-   DARK MODE (kept but secondary now)
-══════════════════════════════════════════ */
-body.dark{
-  --ink:#f5f5f0;--ink2:#e8e4dc;--ink3:#d0c8bb;
-  --paper:#0d0d0a;--paper2:#141410;--paper3:#1c1b16;--paper4:#25231c;
-  --rule:#3a3828;--rule2:#4a4838;
-  --muted:#ccc4b8;   /* AAA on dark paper */
-  --dim:#a89e92;     /* AAA on dark paper */
-  --red:#f06b5d;     /* brighter on dark for AAA */
+.foot-logo{
+  font-family:var(--serif);
+  font-size:22px;
+  font-weight:700;
+  color:var(--ink);
+  margin-bottom:8px;
+  font-style:italic;
+}
+.foot-tag{
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:24px;
 }
 </style>
 </head>
 <body>
 
 <a class="skip" href="#main-content">Skip to main content</a>
-<a class="skip" href="#s5" style="left:220px">Skip to calculator</a>
 
-<!-- ══════ NAV ══════ -->
-<nav role="navigation" aria-label="Main navigation">
-  <a class="nav-logo" href="#" aria-label="Lacunae — return to top">
-    <span class="logo-wordmark">Lacunae</span>
-    <span class="logo-sep" aria-hidden="true"></span>
-    <span class="logo-sub">The Gaps in Power</span>
-  </a>
-  <div class="nav-right">
-    <div class="nav-links" id="nav-links" role="list">
-      <a class="nav-link" href="#s1" role="listitem">Overview</a>
-      <a class="nav-link" href="#s2" role="listitem">Distribution</a>
-      <a class="nav-link" href="#s3" role="listitem">Billionaires</a>
-      <a class="nav-link" href="#s4" role="listitem">Race</a>
-      <a class="nav-link" href="#s5" role="listitem">Calculator</a>
-    </div>
-    <button class="theme-btn" id="theme-toggle" aria-label="Toggle dark mode" onclick="toggleTheme()">
-      <span id="theme-icon" aria-hidden="true">☀</span>
-      <span id="theme-label">Dark</span>
-    </button>
-    <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-<div id="pb" aria-hidden="true"><div id="pf"></div></div>
+<!-- ══════ MASTHEAD ══════ -->
+<div class="masthead">
+  <span class="section">The Gap</span>
+  An interactive look at U.S. wealth inequality
+</div>
 
 <!-- ══════ TICKER ══════ -->
 <div class="ticker-wrap" aria-hidden="true">
@@ -543,114 +887,93 @@ body.dark{
 <main id="main-content">
 
 <!-- ════════════ HERO ════════════ -->
-<section id="s1" aria-labelledby="s1-heading">
-  <div class="hero-bg-number" aria-hidden="true">31.7%</div>
-  <div class="hero-inner">
-    <div class="hero-kicker" aria-hidden="true">U.S. Wealth Inequality · Q3 2025</div>
-    <h1 class="hero-h1" id="s1-heading">
-      The gap has never<br>been <em>wider.</em>
-    </h1>
-    <p class="hero-dek">In Q3 2025, the wealthiest 1% of Americans owned a record 31.7% of the nation's total wealth — the highest share since the Federal Reserve began tracking in 1989.</p>
-    <div class="hero-stats" role="list" aria-label="Key statistics">
-      <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:#ff6b5b">31.7%</div>
-        <div class="hs-lbl">Top 1%<br>wealth share</div>
-      </div>
-      <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:#fff">2.5%</div>
-        <div class="hs-lbl">Bottom 50%<br>wealth share</div>
-      </div>
-      <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:#fff">$7.8T</div>
-        <div class="hs-lbl">905 billionaires<br>combined</div>
-      </div>
-      <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:#fff">$809B</div>
-        <div class="hs-lbl">Elon Musk<br>net worth</div>
-      </div>
+<section id="hero" aria-labelledby="s1-heading">
+  <div class="hero-kicker">U.S. Wealth · Q3 2025</div>
+  <h1 class="hero-h1" id="s1-heading">The Top 1% Now Owns 31.7% of America's Wealth</h1>
+  <p class="hero-dek">It is the most concentrated share since the Federal Reserve began tracking the distribution in 1989.</p>
+  <div class="byline"><strong>By The Editors</strong></div>
+  <div class="dateline">Published April 17, 2026</div>
+
+  <div class="hero-stats" role="list" aria-label="Key statistics">
+    <div class="hs" role="listitem">
+      <div class="hs-val red">31.7%</div>
+      <div class="hs-lbl">Top 1%<br>wealth share</div>
     </div>
-  </div>
-  <div class="hero-scroll-cue" aria-hidden="true">
-    <span>SCROLL</span>
-    <span class="scroll-arrow">↓</span>
+    <div class="hs" role="listitem">
+      <div class="hs-val">2.5%</div>
+      <div class="hs-lbl">Bottom 50%<br>wealth share</div>
+    </div>
+    <div class="hs" role="listitem">
+      <div class="hs-val">$7.8T</div>
+      <div class="hs-lbl">905 billionaires<br>combined</div>
+    </div>
+    <div class="hs" role="listitem">
+      <div class="hs-val">$809B</div>
+      <div class="hs-lbl">Elon Musk<br>net worth</div>
+    </div>
   </div>
 </section>
 
-<div class="section-rule"></div>
+<hr class="divider">
 
 <!-- ════════════ DISTRIBUTION ════════════ -->
 <section id="s2" aria-labelledby="s2-heading">
-  <div class="s-block reveal">
+  <div class="s-block">
     <span class="s-label">The Distribution</span>
-    <h2 class="s-hed" id="s2-heading">Who owns <em>what.</em></h2>
-    <p class="s-dek">The champagne glass is the most honest chart in economics. Scroll to move through the U.S. wealth distribution, from the bottom to the very top.</p>
+    <h2 class="s-hed" id="s2-heading">A Champagne Glass, Not a Pyramid</h2>
+    <p class="s-dek">If American wealth were a vessel, it would not be a wide pyramid with most at the bottom. It would be a champagne glass — a vast bowl of riches at the top resting on a needle-thin stem of everyone else.</p>
+    <p class="s-body">Scroll to move through each fifth of the U.S. population, from the poorest at the bottom to the richest at the top.</p>
   </div>
 
   <div id="cg-outer">
-    <div id="cg-scroll-hint" aria-hidden="true"><span id="cg-hint-anim">↓</span><span>Scroll to move through the distribution</span></div>
-    <!-- Live region announces stage changes to screen readers -->
-    <div id="cg-live" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"></div>
+    <div id="cg-scroll-hint"><span id="cg-hint-anim">↓</span><span>Scroll to fill the glass</span></div>
     <div id="cg-sticky-wrap">
-      <div id="cg-big-stat" aria-hidden="true">
-        <div id="cg-big-name">Poorest 20%</div>
-        <div id="cg-big-pct" style="color:var(--red)">1.4% of wealth</div>
+      <div id="cg-stage-label">Poorest 20%</div>
+      <div id="cg-stage-pct">1.4% of wealth</div>
+      <div id="cg-canvas-wrap" role="img" aria-label="Champagne glass: U.S. wealth by quintile">
+        <canvas id="cg-canvas"></canvas>
       </div>
-      <div id="cg-inner-row">
-        <div id="cg-canvas-wrap"
-             role="img"
-             aria-label="Champagne glass visualization: Poorest 20% hold 1.4% of wealth. Scroll to explore each quintile."
-             tabindex="0">
-          <canvas id="cg-canvas"></canvas>
-          <div id="cg-overlay" aria-hidden="true">
-            <div id="cg-label-top"><div id="cg-group-name"></div><div id="cg-group-pct"></div></div>
-            <div id="cg-label-bottom"><div id="cg-stat-main"></div><div id="cg-stat-sub"></div></div>
-          </div>
-        </div>
-        <div id="cg-progress-track" aria-hidden="true">
-          <div id="cg-progress-fill"></div>
-          <div id="cg-progress-thumb"></div>
-        </div>
-      </div>
+      <div id="cg-stat-main"></div>
+      <div id="cg-stat-sub"></div>
     </div>
-    <div id="cg-scroll-space" aria-hidden="true"></div>
+    <div id="cg-scroll-space"></div>
   </div>
 
   <!-- Bars -->
   <div class="s-block">
-    <div class="section-rule thin" style="margin-bottom:48px"></div>
-    <div id="wbars" role="list" aria-label="Wealth by group" style="margin-bottom:56px"></div>
+    <div class="s-body" style="margin-top:32px">A simpler view of the same numbers, this time grouping the U.S. population by Federal Reserve wealth bracket.</div>
+    <div id="wbars" class="bars" role="list" aria-label="Wealth by group"></div>
 
-    <div class="section-rule thin" style="margin-bottom:48px"></div>
+    <hr class="divider" style="margin:48px 0">
 
-    <h3 class="s-hed" style="font-size:clamp(26px,4.5vw,48px)" class="reveal">100 Americans</h3>
-    <p class="s-dek reveal">Each dot is 1% of the U.S. population, colored by wealth group.</p>
+    <h3 class="s-hed" style="font-size:clamp(24px,3.5vw,34px)">100 Americans</h3>
+    <p class="s-dek">Each dot represents 1 percent of the U.S. population, colored by the wealth group its members belong to.</p>
 
-    <div class="legend reveal" role="list" aria-label="Dot color legend">
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#a62921" aria-hidden="true"></div>Bottom 50%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#7a4000" aria-hidden="true"></div>Middle 40%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#5c4400" aria-hidden="true"></div>Next 9%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#0f2a44" aria-hidden="true"></div>Top 1%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#0f3320" aria-hidden="true"></div>Median (#50)</div>
+    <div class="legend" role="list">
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#d0021b"></div>Bottom 50%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#9a9a9a"></div>Middle 40%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#555"></div>Next 9%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#121212"></div>Top 1%</div>
     </div>
-    <div class="fbtns reveal" role="group" aria-label="Highlight a wealth group in the dot grid">
-      <button class="fbtn on" onclick="filterDots('all',this)" aria-pressed="true" aria-label="Show all groups">All</button>
-      <button class="fbtn" onclick="filterDots('b50',this)" aria-pressed="false" aria-label="Highlight bottom 50 percent, 2.5 percent of wealth">Bottom 50% — 2.5%</button>
-      <button class="fbtn" onclick="filterDots('m40',this)" aria-pressed="false" aria-label="Highlight middle 40 percent, 26.5 percent of wealth">Middle 40% — 26.5%</button>
-      <button class="fbtn" onclick="filterDots('n9',this)" aria-pressed="false" aria-label="Highlight next 9 percent, 39.3 percent of wealth">Next 9% — 39.3%</button>
-      <button class="fbtn" onclick="filterDots('t1',this)" aria-pressed="false" aria-label="Highlight top 1 percent, 31.7 percent of wealth">Top 1% — 31.7%</button>
-      <button class="fbtn" onclick="filterDots('you',this)" aria-pressed="false" aria-label="Highlight the median American household, dot number 50">Median</button>
+    <div class="fbtns" role="group">
+      <button class="fbtn on" onclick="filterDots('all',this)" aria-pressed="true">All</button>
+      <button class="fbtn" onclick="filterDots('b50',this)" aria-pressed="false">Bottom 50%</button>
+      <button class="fbtn" onclick="filterDots('m40',this)" aria-pressed="false">Middle 40%</button>
+      <button class="fbtn" onclick="filterDots('n9',this)" aria-pressed="false">Next 9%</button>
+      <button class="fbtn" onclick="filterDots('t1',this)" aria-pressed="false">Top 1%</button>
+      <button class="fbtn" onclick="filterDots('you',this)" aria-pressed="false">Median</button>
     </div>
-    <div class="dgrid reveal" id="dgrid" role="grid" aria-label="100 Americans dot visualization — each dot represents 1 percent of the U.S. population"></div>
-    <div class="dinfo" id="dinfo" role="status" aria-live="polite" aria-atomic="true">Each dot is 1% of the U.S. population. Use the buttons to highlight a wealth group.</div>
+    <div class="dgrid" id="dgrid" role="grid" aria-label="100 Americans dot visualization"></div>
+    <div class="dinfo" id="dinfo" role="status" aria-live="polite">Each dot is 1 percent of the U.S. population. Use the buttons to highlight a wealth group.</div>
 
-    <div style="margin-top:64px" class="reveal">
-      <h3 class="s-hed" style="font-size:clamp(26px,4.5vw,48px)">Top 1% share since 1989</h3>
-      <p class="s-dek">Rising from 23.8% in 1989 to a record 31.7% in 2025, growing through every boom.</p>
-      <div class="tl-wrap" id="tl" role="img" aria-label="Line chart: top 1% wealth share 1989–2025"></div>
-      <div style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:6px;text-align:right;letter-spacing:.06em">SOURCE: FEDERAL RESERVE DFA 1989–2025</div>
-    </div>
+    <hr class="divider" style="margin:48px 0">
 
-    <div class="sources-wrap reveal">
+    <h3 class="s-hed" style="font-size:clamp(24px,3.5vw,34px)">The Top 1% Share, Since 1989</h3>
+    <p class="s-dek">From 23.8 percent in 1989 to 31.7 percent in 2025. The line has bent upward through every boom.</p>
+    <div class="tl-wrap" id="tl" role="img" aria-label="Line chart: top 1% wealth share 1989 to 2025"></div>
+    <div class="chart-source">Source: Federal Reserve Distributional Financial Accounts, 1989–2025</div>
+
+    <div class="sources-wrap">
       <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron">▾</span></button>
       <div class="sources-body" role="region">
         <a class="src-link" href="https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/chart/" target="_blank" rel="noopener"><div class="src-link-title">Federal Reserve — Distributional Financial Accounts</div><div class="src-link-desc">Primary source for all wealth distribution data, updated quarterly.</div></a>
@@ -661,58 +984,52 @@ body.dark{
   </div>
 </section>
 
-<div class="section-rule"></div>
-
-<!-- ════════════ STATEMENT 1 ════════════ -->
-<div class="statement-ink reveal">
-  <div class="st-kicker">Q3 2025 · Federal Reserve DFA</div>
-  <span class="st-number" style="color:var(--red2)">31.7%</span>
-  <div class="st-text">of all U.S. wealth owned by just <em>1 in 100 Americans.</em></div>
-  <div class="st-sub">A record high — the most concentrated since tracking began in 1989.</div>
-</div>
-
-<div class="section-rule"></div>
+<hr class="divider">
 
 <!-- ════════════ BILLIONAIRES ════════════ -->
 <section id="s3" aria-labelledby="s3-heading">
   <div class="s-block">
-    <div class="reveal">
-      <span class="s-label">The Billionaire Class</span>
-      <h2 class="s-hed" id="s3-heading">905 people.<br><em>$7.8 trillion.</em></h2>
-      <p class="s-dek">More combined wealth than the bottom half of all Americans. Their collective fortune grew more than 4× since March 2020.</p>
-    </div>
+    <span class="s-label">The Billionaire Class</span>
+    <h2 class="s-hed" id="s3-heading">905 People, $7.8 Trillion</h2>
+    <p class="s-dek">Together they hold more wealth than the bottom half of the country. Their combined fortune has grown more than fourfold since March 2020.</p>
 
-    <div class="data-grid reveal" role="list">
-      <div class="data-card" role="listitem"><div class="dc-lbl">Billionaires in 1989</div><div class="dc-val" style="color:var(--muted)">66</div><div class="dc-sub">Combined wealth ~$200 billion</div></div>
-      <div class="data-card" role="listitem"><div class="dc-lbl">Billionaires in 2025</div><div class="dc-val" style="color:var(--amber)">905</div><div class="dc-sub">$7.8T combined — 39× increase</div></div>
-      <div class="data-card" role="listitem"><div class="dc-lbl">Pandemic wealth gain</div><div class="dc-val" style="color:var(--forest)">+70%</div><div class="dc-sub">March 2020 to October 2021</div></div>
-      <div class="data-card" role="listitem">
-        <div class="dc-lbl">Top 12 billionaires hold</div>
-        <div class="dc-val" style="color:var(--red)">$2.7T</div>
-        <div class="dc-sub">As of January 2026 — quadrupled from 2020</div>
-        <button class="src-btn" aria-expanded="false" onclick="toggleSrc(this)">↗ Source</button>
-        <div class="src-popup" role="tooltip">Institute for Policy Studies, January 2026.<br><a href="https://inequality.org/article/billionaire-wealth-concentration-is-even-worse-than-you-imagine/" target="_blank" rel="noopener">inequality.org →</a></div>
+    <div class="stats-row" role="list">
+      <div class="stat-item" role="listitem">
+        <div class="stat-lbl">Billionaires in 1989</div>
+        <div class="stat-val">66</div>
+        <div class="stat-sub">Combined wealth ~$200 billion</div>
+      </div>
+      <div class="stat-item" role="listitem">
+        <div class="stat-lbl">Billionaires in 2025</div>
+        <div class="stat-val">905</div>
+        <div class="stat-sub">$7.8T combined — 39× increase</div>
+      </div>
+      <div class="stat-item" role="listitem">
+        <div class="stat-lbl">Pandemic gain</div>
+        <div class="stat-val">+70%</div>
+        <div class="stat-sub">March 2020 to October 2021</div>
+      </div>
+      <div class="stat-item" role="listitem">
+        <div class="stat-lbl">Top 12 billionaires hold</div>
+        <div class="stat-val red">$2.7T</div>
+        <div class="stat-sub">Quadrupled from 2020</div>
       </div>
     </div>
 
-    <div class="bil-box reveal">
-      <div class="bil-box-head">
-        <div class="bil-box-eyebrow">Top U.S. Billionaires · Early 2026 · Click to compare</div>
-      </div>
-      <div class="bil-box-body">
-        <div id="bbars" role="list" aria-label="Billionaire wealth bars"></div>
-      </div>
-      <div class="bil-box-ctx" id="bctx" role="status" aria-live="polite">
-        Click any name to see how their wealth compares to everyday benchmarks.
+    <div class="bil-section">
+      <div class="bil-head">Top U.S. billionaires · Early 2026 · Click to compare</div>
+      <div id="bbars" role="list" aria-label="Billionaire wealth bars"></div>
+      <div class="bil-ctx" id="bctx" role="status" aria-live="polite">
+        Click any name to see how that fortune compares to ordinary American benchmarks.
       </div>
     </div>
 
-    <div class="pq-wrap reveal">
-      <div class="pq-text">The top 10 richest ended 2025 worth $2.55 trillion — more than Meta and Walmart combined.</div>
-      <div class="pq-attr">— Benzinga analysis, January 2026</div>
+    <div class="pq">
+      <div class="pq-text">The 10 richest Americans ended 2025 worth $2.55 trillion — more than Meta and Walmart combined.</div>
+      <div class="pq-attr">Benzinga analysis · January 2026</div>
     </div>
 
-    <div class="sources-wrap reveal">
+    <div class="sources-wrap">
       <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron">▾</span></button>
       <div class="sources-body" role="region">
         <a class="src-link" href="https://inequality.org/article/billionaire-wealth-concentration-is-even-worse-than-you-imagine/" target="_blank" rel="noopener"><div class="src-link-title">Inequality.org — Billionaire Wealth Concentration</div><div class="src-link-desc">Tracks 905 U.S. billionaires using Fed data and Forbes real-time list.</div></a>
@@ -723,70 +1040,54 @@ body.dark{
   </div>
 </section>
 
-<div class="section-rule"></div>
-
-<!-- ════════════ STATEMENT 2 ════════════ -->
-<div class="statement-red reveal">
-  <div class="st-kicker">The racial wealth gap</div>
-  <span class="st-number">6.4×</span>
-  <div class="st-text">the wealth of the median white family<br>versus the median <em>Black family.</em></div>
-</div>
-
-<div class="section-rule"></div>
+<hr class="divider">
 
 <!-- ════════════ RACE ════════════ -->
 <section id="s4" aria-labelledby="s4-heading">
   <div class="s-block">
-    <div class="reveal">
-      <span class="s-label">The Racial Wealth Gap</span>
-      <h2 class="s-hed" id="s4-heading">Same country.<br><em>Very different starting lines.</em></h2>
-      <p class="s-dek">Wealth inequality runs along racial lines that have persisted for generations — the direct result of policy choices, not personal ones.</p>
-      <p class="s-note">Each card shows a racial group's share of households vs. their share of total wealth. The wider the gap, the less neutral the system.</p>
-    </div>
+    <span class="s-label">The Racial Wealth Gap</span>
+    <h2 class="s-hed" id="s4-heading">Same Country, Different Starting Lines</h2>
+    <p class="s-dek">Wealth in America runs along racial lines that have persisted for generations — the result, in large part, of policy choices made over the last century.</p>
+    <p class="s-note">Each row shows a racial group's share of total U.S. wealth alongside its share of households. The wider the gap, the less neutral the system.</p>
 
-    <div class="race-grid reveal" id="s4-grid">
-      <div class="race-card">
-        <div class="rc-lbl">White households</div>
-        <div class="rc-hh">66% of all households</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
-        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100" aria-label="White households: 84.2% of total U.S. wealth">
-          <div class="rbar" data-w="84.2" style="background:var(--ink3)"></div>
+    <div class="race-stack" id="s4-grid">
+      <div class="race-row">
+        <div class="race-meta">
+          <div class="race-name"><strong>White households</strong> · 66% of all households</div>
+          <div class="race-pct">84.2%</div>
         </div>
-        <div class="rc-pct" style="color:var(--ink)">84.2%</div>
-        <div class="dc-sub" style="margin-top:10px">Median net worth: $282,310</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED DFA Q4 2023</div>
+        <div class="race-bar-wrap" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100">
+          <div class="rbar" data-w="84.2" style="background:#121212"></div>
+        </div>
+        <div class="race-detail"><span>Median net worth: $282,310</span><span>Federal Reserve DFA, Q4 2023</span></div>
       </div>
-      <div class="race-card">
-        <div class="rc-lbl" style="color:var(--forest)">Black households</div>
-        <div class="rc-hh">11.4% of all households</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
-        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100" aria-label="Black households: 3.4% of total U.S. wealth">
-          <div class="rbar" data-w="3.4" style="background:var(--forest);transition-delay:.1s"></div>
+      <div class="race-row">
+        <div class="race-meta">
+          <div class="race-name"><strong>Black households</strong> · 11.4% of all households</div>
+          <div class="race-pct">3.4%</div>
         </div>
-        <div class="rc-pct" style="color:var(--forest)">3.4%</div>
-        <div class="dc-sub" style="margin-top:10px">Median net worth: $44,100</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED SCF 2022</div>
+        <div class="race-bar-wrap" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100">
+          <div class="rbar" data-w="3.4" style="background:#d0021b;transition-delay:.1s"></div>
+        </div>
+        <div class="race-detail"><span>Median net worth: $44,100</span><span>Federal Reserve SCF, 2022</span></div>
       </div>
-      <div class="race-card">
-        <div class="rc-lbl" style="color:var(--amber)">Hispanic households</div>
-        <div class="rc-hh">9.6% of all households</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
-        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" aria-label="Hispanic households: 2.3% of total U.S. wealth">
-          <div class="rbar" data-w="2.3" style="background:var(--amber);transition-delay:.2s"></div>
+      <div class="race-row">
+        <div class="race-meta">
+          <div class="race-name"><strong>Hispanic households</strong> · 9.6% of all households</div>
+          <div class="race-pct">2.3%</div>
         </div>
-        <div class="rc-pct" style="color:var(--amber)">2.3%</div>
-        <div class="dc-sub" style="margin-top:10px">Median net worth: ~$48,000</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED DFA 2023</div>
+        <div class="race-bar-wrap" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100">
+          <div class="rbar" data-w="2.3" style="background:#666;transition-delay:.2s"></div>
+        </div>
+        <div class="race-detail"><span>Median net worth: ~$48,000</span><span>Federal Reserve DFA, 2023</span></div>
       </div>
-      <div class="race-card">
-        <div class="rc-lbl">The gap in plain terms</div>
-        <div class="s-body" style="font-size:15px;margin-top:12px;max-width:none">
-          The median white family has <strong style="color:var(--ink)">6.4×</strong> the wealth of the median Black family. In absolute dollars, this gap has <em>widened</em> since 1983 — from ~$320K to over <strong style="color:var(--red)">$1 million</strong>. The gap results from structural racism in housing, banking, and inheritance law.
-        </div>
+
+      <div class="race-summary">
+        The median white family has <span class="red">6.4 times</span> the wealth of the median Black family. In absolute dollars, that gap has <em>widened</em> since 1983 — from roughly $320,000 to more than <strong>$1 million</strong>. The gap is the result of structural choices in housing, banking and inheritance law, not personal ones.
       </div>
     </div>
 
-    <div class="sources-wrap reveal">
+    <div class="sources-wrap">
       <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron">▾</span></button>
       <div class="sources-body" role="region">
         <a class="src-link" href="https://apps.urban.org/features/wealth-inequality-charts/" target="_blank" rel="noopener"><div class="src-link-title">Urban Institute — Nine Charts about Wealth Inequality</div><div class="src-link-desc">How the racial wealth gap has grown in absolute terms.</div></a>
@@ -797,45 +1098,38 @@ body.dark{
   </div>
 </section>
 
-<div class="section-rule"></div>
+<hr class="divider">
 
 <!-- ════════════ CALCULATOR ════════════ -->
 <section id="s5" aria-labelledby="s5-heading">
   <div class="s-block">
-    <div class="reveal">
-      <span class="s-label">Personal Calculator</span>
-      <h2 class="s-hed" id="s5-heading">Where do <em>you</em> sit?</h2>
-      <p class="s-dek">Enter your net worth and age to see your exact position in the U.S. wealth distribution.</p>
-      <p class="s-note">Net worth = total assets minus total debts. Include home equity, retirement accounts, savings. Subtract mortgage, student loans, other debts.</p>
-    </div>
+    <span class="s-label">Personal Calculator</span>
+    <h2 class="s-hed" id="s5-heading">Where Do You Sit?</h2>
+    <p class="s-dek">Enter your net worth and age to see your exact position in the U.S. wealth distribution.</p>
+    <p class="s-note">Net worth = total assets minus total debts. Include home equity, retirement, savings. Subtract mortgage, student loans, other debts.</p>
 
-    <div class="calc-box reveal">
-      <div class="calc-box-head">
-        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase">Based on Federal Reserve SCF 2022/2023 data</div>
-      </div>
+    <div class="calc-box">
       <div class="calc-fields">
         <div class="cfield">
           <label for="inNW">Net worth ($)</label>
-          <input type="number" id="inNW" value="192084" oninput="runCalc()" min="-999999999" max="999999999"
-            aria-describedby="nw-hint" aria-label="Your net worth in dollars">
-          <div class="calc-hint" id="nw-hint">Assets minus debts. Can be negative.</div>
+          <input type="number" id="inNW" value="192084" oninput="runCalc()" min="-999999999" max="999999999">
+          <div class="calc-hint">Assets minus debts. Can be negative.</div>
         </div>
         <div class="cfield">
           <label for="inAge">Age</label>
-          <input type="number" id="inAge" value="40" oninput="runCalc()" min="18" max="99"
-            aria-describedby="age-hint" aria-label="Your age in years">
-          <div class="calc-hint" id="age-hint">Used to compare against your age cohort (18–64).</div>
+          <input type="number" id="inAge" value="40" oninput="runCalc()" min="18" max="99">
+          <div class="calc-hint">Compared against your age cohort.</div>
         </div>
       </div>
-      <div class="calc-results" id="cresults" aria-live="polite" aria-atomic="false" aria-label="Calculator results"></div>
+      <div class="calc-results" id="cresults" aria-live="polite" aria-label="Calculator results"></div>
       <div class="calc-bars">
-        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px" id="cbars-label">Your wealth vs. key thresholds (log scale)</div>
-        <div id="cbars" role="img" aria-labelledby="cbars-label" aria-label="Comparison bar chart of net worth thresholds"></div>
+        <div style="font-family:var(--sans);font-size:11px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;font-weight:500">Your wealth vs. key thresholds (log scale)</div>
+        <div id="cbars" aria-label="Comparison bars" role="img"></div>
       </div>
-      <div class="calc-narr" id="cnarr" role="status" aria-live="polite" aria-atomic="true"></div>
+      <div class="calc-narr" id="cnarr" role="status" aria-live="polite"></div>
     </div>
 
-    <div class="sources-wrap reveal">
+    <div class="sources-wrap">
       <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron">▾</span></button>
       <div class="sources-body" role="region">
         <a class="src-link" href="https://www.federalreserve.gov/econres/scfindex.htm" target="_blank" rel="noopener"><div class="src-link-title">Federal Reserve — Survey of Consumer Finances</div><div class="src-link-desc">All percentile thresholds. Updated every 3 years; latest 2022/2023.</div></a>
@@ -849,22 +1143,22 @@ body.dark{
 </main>
 
 <footer>
-  <div class="foot-logo">Lacunae</div>
-  <div class="foot-tag">The Gaps in Power · lacunae.us</div>
+  <div class="foot-logo">The Gap</div>
+  <div class="foot-tag">An interactive on U.S. wealth inequality</div>
   Sources: Federal Reserve DFA Q3 2025 · Fed SCF 2022/2023 · Forbes Billionaires 2025/2026<br>
-  Institute for Policy Studies · Moody's Analytics · DQYDJ · Urban Institute · CBS News / CNBC Jan 2026 · Inequality.org<br><br>
+  Institute for Policy Studies · DQYDJ · Urban Institute · Inequality.org<br><br>
   All figures in nominal USD. Percentile calculations based on Fed SCF 2022/2023. Educational purposes only.
 </footer>
 
 <script>
 /* ══════════════════════════════════════════
-   DATA — updated with editorial color palette
+   DATA
 ══════════════════════════════════════════ */
 var WG=[
-  {n:"Bottom 50%",sub:"165 million households",sh:2.5,c:"#c0392b"},
-  {n:"50th–90th percentile",sub:"Upper middle class",sh:26.5,c:"#b5620a"},
-  {n:"90th–99th percentile",sub:"Upper class",sh:39.3,c:"#7a5c00"},
-  {n:"Top 1%",sub:"~1.3 million households",sh:31.7,c:"#1a3a5c"},
+  {n:"Bottom 50%",sub:"165 million households",sh:2.5,c:"#d0021b"},
+  {n:"50th–90th percentile",sub:"Upper middle class",sh:26.5,c:"#9a9a9a"},
+  {n:"90th–99th percentile",sub:"Upper class",sh:39.3,c:"#555"},
+  {n:"Top 1%",sub:"~1.3 million households",sh:31.7,c:"#121212"},
 ];
 var TL=[
   {y:"1989",p:23.8},{y:"1992",p:25.2},{y:"1995",p:25.9},{y:"1998",p:29.8},
@@ -873,10 +1167,10 @@ var TL=[
   {y:"2021",p:28.9},{y:"2022",p:30.5},{y:"2025",p:31.7},
 ];
 var BB=[
-  {n:"Elon Musk",w:809,c:"#1a3a5c"},{n:"Mark Zuckerberg",w:216,c:"#c0392b"},
-  {n:"Larry Ellison",w:210,c:"#b5620a"},{n:"Jeff Bezos",w:195,c:"#1a4a2e"},
-  {n:"Larry Page",w:160,c:"#5a3a6a"},{n:"Sergey Brin",w:155,c:"#6a3a2a"},
-  {n:"Warren Buffett",w:145,c:"#3a4a1a"},{n:"Jensen Huang",w:130,c:"#1a4a5a"},
+  {n:"Elon Musk",w:809},{n:"Mark Zuckerberg",w:216},
+  {n:"Larry Ellison",w:210},{n:"Jeff Bezos",w:195},
+  {n:"Larry Page",w:160},{n:"Sergey Brin",w:155},
+  {n:"Warren Buffett",w:145},{n:"Jensen Huang",w:130},
 ];
 var PERCS=[
   {p:10,v:440},{p:20,v:13528},{p:25,v:28000},{p:30,v:46700},{p:40,v:93300},
@@ -894,23 +1188,23 @@ var COHORTS={
   "55-59":{p25:84977,med:321074,p75:1137318,p90:2672160,top1:15371684},
   "60-64":{p25:80372,med:392860,p75:1131122,p90:3042280,top1:17869960},
 };
-var DC={b50:"#c0392b",m40:"#b5620a",n9:"#7a5c00",t1:"#1a3a5c"};
-var DD={b50:"#f5ece8",m40:"#f5ede0",n9:"#f0ecd8",t1:"#e0e8f0"};
+var DC={b50:"#d0021b",m40:"#9a9a9a",n9:"#555",t1:"#121212"};
+var DD={b50:"#f4d4d8",m40:"#e8e8e8",n9:"#d4d4d4",t1:"#bbb"};
 var DI={
-  all:"Each dot is 1% of the U.S. population. Use the buttons to highlight a wealth group.",
-  b50:"Bottom 50% highlighted. These 50 dots — 165 million households — share just 2.5% of all U.S. wealth.",
-  m40:"Middle 40% highlighted. These 40 dots hold 26.5%: homeowners, 401(k) holders, professionals.",
-  n9:"Next 9% highlighted. Just 9 dots — yet they hold 39.3% of all wealth, more than the entire bottom 90% combined.",
-  t1:"Top 1% highlighted. Just 1 dot. One person out of 100. They hold 31.7% of all wealth — a record high.",
-  you:"The median American is dot #50. At $192K net worth — half the country is above this line. Half is below.",
+  all:"Each dot is 1 percent of the U.S. population. Use the buttons to highlight a wealth group.",
+  b50:"The bottom half — 165 million households — share just 2.5 percent of all U.S. wealth.",
+  m40:"The middle 40 percent hold 26.5 percent: homeowners, retirement-account holders, professionals.",
+  n9:"Just 9 dots — but they hold 39.3 percent of all wealth. More than the entire bottom 90 percent combined.",
+  t1:"One person out of 100. They hold 31.7 percent of all wealth — a record high.",
+  you:"The median American is dot #50. Net worth: $192,084. Half the country is above this line. Half is below.",
 };
 var CG_STAGES=[
-  {group:"Poorest 20%",wealth:"1.4%",color:"#c0392b",stat:"The poorest fifth share just 1.4% of total wealth",sub:"Median net worth near zero — many carry more debt than assets"},
-  {group:"Second 20%",wealth:"1.9%",color:"#e67e22",stat:"The second-poorest fifth holds 1.9% of wealth",sub:"Combined: the bottom 40% hold just 3.3% of all U.S. wealth"},
-  {group:"Middle 20%",wealth:"2.3%",color:"#f1c40f",stat:"The middle fifth holds 2.3% of national wealth",sub:"Primarily home equity — wealth that can vanish in a recession"},
-  {group:"Upper-Middle 20%",wealth:"11.7%",color:"#27ae60",stat:"The fourth fifth holds 11.7% — the glass begins to widen",sub:"Retirement accounts, home equity, and some investment assets"},
-  {group:"Richest 20%",wealth:"82.7%",color:"#1a3a5c",stat:"The richest fifth holds 82.7% of all wealth — the vast bowl",sub:"Source: UNDP. U.S. data follows a comparable pattern."},
-  {group:"Top 1%",wealth:"31.7%",color:"#1a3a5c",stat:"Within that top fifth: just 1% own 31.7% of everything",sub:"Federal Reserve DFA, Q3 2025 — a record high since 1989"},
+  {group:"Poorest 20%",wealth:"1.4%",color:"#d0021b",stat:"The poorest fifth shares just 1.4 percent of total wealth.",sub:"Median net worth near zero — many carry more debt than assets."},
+  {group:"Second 20%",wealth:"1.9%",color:"#c44a2a",stat:"The second-poorest fifth holds 1.9 percent.",sub:"The bottom 40 percent together hold just 3.3 percent of all U.S. wealth."},
+  {group:"Middle 20%",wealth:"2.3%",color:"#9a7a2a",stat:"The middle fifth holds 2.3 percent of national wealth.",sub:"Wealth is mainly home equity — vulnerable in a recession."},
+  {group:"Upper-Middle 20%",wealth:"11.7%",color:"#5a6a3a",stat:"The fourth fifth holds 11.7 percent. The glass begins to widen.",sub:"Retirement accounts, home equity, and some investment assets."},
+  {group:"Richest 20%",wealth:"82.7%",color:"#1a3a5c",stat:"The richest fifth holds 82.7 percent of all wealth — the bowl.",sub:"Source: UNDP. U.S. data follows a comparable pattern."},
+  {group:"Top 1%",wealth:"31.7%",color:"#121212",stat:"Within that fifth: just 1 percent own 31.7 percent of everything.",sub:"Federal Reserve DFA, Q3 2025 — a record high since 1989."},
 ];
 
 /* ══════════ HELPERS ══════════ */
@@ -938,35 +1232,8 @@ function estPerc(nw){
   }
   return 99.5;
 }
-function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
 
-/* ══════════ NAV ══════════ */
-document.getElementById("hamburger").addEventListener("click",function(){
-  var e=this.getAttribute("aria-expanded")==="true";
-  this.setAttribute("aria-expanded",String(!e));
-  var l=document.getElementById("nav-links");
-  if(e)l.classList.remove("open");else l.classList.add("open");
-});
-document.querySelectorAll(".nav-link").forEach(function(l){
-  l.addEventListener("click",function(){
-    document.getElementById("nav-links").classList.remove("open");
-    document.getElementById("hamburger").setAttribute("aria-expanded","false");
-  });
-});
-
-/* ══════════ POPUPS / ACCORDIONS ══════════ */
-function toggleSrc(btn){
-  var popup=btn.nextElementSibling,open=popup.classList.contains("open");
-  document.querySelectorAll(".src-popup.open").forEach(function(p){p.classList.remove("open")});
-  document.querySelectorAll(".src-btn").forEach(function(b){b.setAttribute("aria-expanded","false")});
-  if(!open){popup.classList.add("open");btn.setAttribute("aria-expanded","true");}
-}
-document.addEventListener("click",function(e){
-  if(!e.target.classList.contains("src-btn")){
-    document.querySelectorAll(".src-popup.open").forEach(function(p){p.classList.remove("open")});
-    document.querySelectorAll(".src-btn").forEach(function(b){b.setAttribute("aria-expanded","false")});
-  }
-});
+/* ══════════ ACCORDIONS ══════════ */
 function toggleSources(btn){
   var e=btn.getAttribute("aria-expanded")==="true";
   btn.setAttribute("aria-expanded",String(!e));
@@ -977,11 +1244,16 @@ function toggleSources(btn){
 /* ══════════ TICKER ══════════ */
 function buildTicker(){
   var items=[
-    ["Top 1% wealth share (Q3 2025)","31.7% — record high"],["Elon Musk net worth","$809B (Forbes 2026)"],
-    ["905 U.S. billionaires","$7.8 trillion combined"],["Bottom 50% wealth share","2.5% of all wealth"],
-    ["Median household net worth","$192,084"],["Top 1% threshold","$13.7M+"],
-    ["Billionaires 1989 to 2025","66 to 905"],["White / Black wealth gap","6.4× median difference"],
-    ["Pandemic billionaire gain","+70% (2020–2021)"],["Top 10% consumer spending","~50% of all U.S. spending"],
+    ["Top 1% wealth share","31.7% — Q3 2025 record"],
+    ["Elon Musk net worth","$809B (Forbes 2026)"],
+    ["905 U.S. billionaires","$7.8 trillion combined"],
+    ["Bottom 50% wealth share","2.5% of all wealth"],
+    ["Median household net worth","$192,084"],
+    ["Top 1% threshold","$13.7M+"],
+    ["Billionaires, 1989 → 2025","66 → 905"],
+    ["White / Black wealth gap","6.4× median difference"],
+    ["Pandemic billionaire gain","+70% (2020–2021)"],
+    ["Top 10% consumer spending","~50% of all U.S. spending"],
   ];
   var t=document.getElementById("ticker");if(!t)return;
   var all=items.concat(items);
@@ -995,104 +1267,80 @@ function buildTicker(){
 function buildWBars(){
   var el=document.getElementById("wbars");if(!el)return;
   WG.forEach(function(g,i){
-    var d=document.createElement("div");d.className="brow reveal";d.setAttribute("role","listitem");
-    d.style.transitionDelay=(i*0.08)+"s";
+    var d=document.createElement("div");d.className="brow";d.setAttribute("role","listitem");
     d.innerHTML=
       '<div class="bmeta">'+
-        '<div style="display:flex;align-items:center;gap:10px">'+
-          '<span class="bname">'+g.n+'</span>'+
-          '<span style="font-size:13px;color:var(--dim);font-family:\'DM Mono\',monospace;letter-spacing:.03em">('+g.sub+')</span>'+
-        '</div>'+
-        '<span class="bpct" style="color:'+g.c+'" aria-label="'+g.sh+' percent">'+g.sh+'%</span>'+
+        '<div><span class="bname">'+g.n+'</span><span class="bname-sub">'+g.sub+'</span></div>'+
+        '<span class="bpct">'+g.sh+'%</span>'+
       '</div>'+
-      '<div class="btrack" role="progressbar" aria-valuenow="'+g.sh+'" aria-valuemin="0" aria-valuemax="100" aria-label="'+g.n+': '+g.sh+'% of U.S. wealth" style="position:relative">'+
-        '<div class="bfill" data-w="'+g.sh+'" style="background:'+g.c+';transition-delay:'+(i*0.1)+'s"></div>'+
-        (g.sh>5?'<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-family:\'DM Mono\',monospace;color:#fff;font-weight:600;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.5)">'+g.sh+'%</span>':'')+
-      '</div>'+
-      (g.sh<=3?'<div class="bsub" role="note">'+g.sub+' share just '+g.sh+'% of national wealth — nearly invisible on this scale.</div>':'');
+      '<div class="btrack" role="progressbar" aria-valuenow="'+g.sh+'" aria-valuemin="0" aria-valuemax="100">'+
+        '<div class="bfill" data-w="'+g.sh+'" style="background:'+g.c+';transition-delay:'+(i*0.08)+'s"></div>'+
+      '</div>';
     el.appendChild(d);
   });
 }
 
 /* ══════════ DOT GRID ══════════ */
 var groupLabels={b50:"Bottom 50%",m40:"Middle 40%",n9:"Next 9%",t1:"Top 1%"};
-var groupWealth={b50:"2.5% of wealth",m40:"26.5% of wealth",n9:"39.3% of wealth",t1:"31.7% of wealth"};
-// Updated to AAA-passing colors on paper background
-var DC={b50:"#a62921",m40:"#7a4000",n9:"#5c4400",t1:"#0f2a44"};
-var DD={b50:"#f5ece8",m40:"#f5ede0",n9:"#f0ecd8",t1:"#e0e8f0"};
-
 function buildDots(){
   var g=document.getElementById("dgrid");if(!g)return;
   for(var i=0;i<100;i++){
     var grp=getDG(i),d=document.createElement("div");
-    var isMedian=(i===49);
-    d.className="dot";
-    d.setAttribute("role","gridcell");
-    d.setAttribute("tabindex",i===0?"0":"-1");// roving tabindex
+    d.className="dot";d.setAttribute("role","gridcell");d.setAttribute("tabindex","0");
     d.setAttribute("data-i",i);d.setAttribute("data-g",grp);
-    d.setAttribute("aria-label","Person "+(i+1)+" of 100: "+groupLabels[grp]+" ("+groupWealth[grp]+")"+(isMedian?" — median American":"")); 
-    d.style.background=isMedian?"#0f3320":DC[grp];
-    if(isMedian){d.style.outline="2px solid #0f3320";d.style.outlineOffset="1px";}
-    g.appendChild(d);
+    d.setAttribute("aria-label","Person "+(i+1)+": "+groupLabels[grp]+(i===49?" (median American)":""));
+    d.style.background=DC[grp];g.appendChild(d);
   }
-  // Arrow-key navigation within grid
-  g.addEventListener("keydown",function(e){
-    var dots=Array.from(g.querySelectorAll(".dot"));
-    var focused=document.activeElement;
-    var idx=dots.indexOf(focused);
-    if(idx===-1)return;
-    var cols=window.innerWidth>=600?20:10;
-    var next=-1;
-    if(e.key==="ArrowRight"){next=Math.min(idx+1,dots.length-1);}
-    else if(e.key==="ArrowLeft"){next=Math.max(idx-1,0);}
-    else if(e.key==="ArrowDown"){next=Math.min(idx+cols,dots.length-1);}
-    else if(e.key==="ArrowUp"){next=Math.max(idx-cols,0);}
-    else return;
-    e.preventDefault();
-    dots[idx].setAttribute("tabindex","-1");
-    dots[next].setAttribute("tabindex","0");
-    dots[next].focus();
-  });
 }
 function filterDots(f,btn){
   document.querySelectorAll(".fbtn").forEach(function(b){b.classList.remove("on");b.setAttribute("aria-pressed","false")});
   if(btn){btn.classList.add("on");btn.setAttribute("aria-pressed","true");}
   document.querySelectorAll(".dot").forEach(function(dot){
     var idx=parseInt(dot.getAttribute("data-i")),grp=dot.getAttribute("data-g");
-    dot.style.outline="";dot.style.outlineOffset="";
-    if(f==="all"){
-      dot.style.background=(idx===49)?"#0f3320":DC[grp];
-      if(idx===49){dot.style.outline="2px solid #0f3320";dot.style.outlineOffset="1px";}
-    }else if(f==="you"){
-      if(idx===49){dot.style.background="#0f3320";dot.style.outline="3px solid #0f3320";dot.style.outlineOffset="2px";}
-      else dot.style.background=DD[grp]||"#e8e4dc";
-    }else dot.style.background=(grp===f)?DC[grp]:(DD[grp]||"#e8e4dc");
+    dot.style.outline="";
+    if(f==="all")dot.style.background=DC[grp];
+    else if(f==="you"){
+      if(idx===49){dot.style.background="#d0021b";dot.style.outline="2px solid #d0021b";dot.style.outlineOffset="2px";}
+      else dot.style.background=DD[grp]||"#e8e8e8";
+    }else dot.style.background=(grp===f)?DC[grp]:(DD[grp]||"#e8e8e8");
   });
-  var di=document.getElementById("dinfo");if(di)di.textContent=DI[f]||DI.all;
+  var di=document.getElementById("dinfo");if(di)di.innerHTML=DI[f]||DI.all;
 }
 
 /* ══════════ TIMELINE ══════════ */
 function buildTimeline(){
   var el=document.getElementById("tl");if(!el)return;
-  var W=Math.max(el.offsetWidth-48,240),H=100,n=TL.length,minP=22,maxP=33;
-  var svg='<svg width="100%" height="'+(H+32)+'" viewBox="0 0 '+W+' '+(H+32)+'" style="overflow:visible">';
+  var W=Math.max(el.offsetWidth-48,240),H=180,n=TL.length,minP=22,maxP=33;
+  var svg='<svg width="100%" height="'+(H+30)+'" viewBox="0 0 '+W+' '+(H+30)+'" style="overflow:visible">';
+
+  // Hairline gridlines
   [24,27,30,33].forEach(function(p){
     var y=H-((p-minP)/(maxP-minP))*H;
-    svg+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#c8c0b2" stroke-width=".5"/>';
-    svg+='<text x="'+(W+6)+'" y="'+(y+4)+'" fill="#9e9790" font-size="9" font-family="\'DM Mono\',monospace">'+p+'%</text>';
+    svg+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#e2e2e2" stroke-width="1"/>';
+    svg+='<text x="'+(W+6)+'" y="'+(y+4)+'" fill="#888" font-size="10" font-family="Inter,sans-serif">'+p+'%</text>';
   });
-  var area="M0,"+H,line="";
-  TL.forEach(function(d,i){var x=(i/(n-1))*W,y=H-((d.p-minP)/(maxP-minP))*H;area+=" L"+x+","+y;line+=(i===0?"M":"L")+x+","+y+" ";});
-  area+=" L"+W+","+H+" Z";
-  svg+='<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c0392b" stop-opacity=".15"/><stop offset="100%" stop-color="#c0392b" stop-opacity="0"/></linearGradient></defs>';
-  svg+='<path d="'+area+'" fill="url(#ag)"/>';
-  svg+='<path d="'+line+'" fill="none" stroke="#c0392b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+
+  var line="";
+  TL.forEach(function(d,i){
+    var x=(i/(n-1))*W,y=H-((d.p-minP)/(maxP-minP))*H;
+    line+=(i===0?"M":"L")+x+","+y+" ";
+  });
+
+  // Single thin line — no fill, no gradient. NYT style.
+  svg+='<path d="'+line+'" fill="none" stroke="#121212" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>';
+
   TL.forEach(function(d,i){
     var x=(i/(n-1))*W,y=H-((d.p-minP)/(maxP-minP))*H,last=(i===n-1);
-    svg+='<circle cx="'+x+'" cy="'+y+'" r="'+(last?5:2.5)+'" fill="'+(last?"#c0392b":"#c0392b88")+'"/>';
-    if(i%3===0||last)svg+='<text x="'+x+'" y="'+(H+22)+'" fill="#9e9790" font-size="9" font-family="\'DM Mono\',monospace" text-anchor="middle">'+d.y+'</text>';
-    if(last)svg+='<text x="'+(x-10)+'" y="'+(y-12)+'" fill="#c0392b" font-size="11" font-family="\'DM Mono\',monospace" font-weight="500" text-anchor="end">'+d.p+'% ▲</text>';
+    svg+='<circle cx="'+x+'" cy="'+y+'" r="'+(last?4:2)+'" fill="'+(last?"#d0021b":"#121212")+'"/>';
+    if(i%3===0||last)svg+='<text x="'+x+'" y="'+(H+22)+'" fill="#888" font-size="10" font-family="Inter,sans-serif" text-anchor="middle">'+d.y+'</text>';
+    if(last){
+      svg+='<text x="'+(x-10)+'" y="'+(y-10)+'" fill="#d0021b" font-size="12" font-family="Inter,sans-serif" font-weight="600" text-anchor="end">'+d.p+'%</text>';
+    }
+    if(i===0){
+      svg+='<text x="'+(x+8)+'" y="'+(y-8)+'" fill="#888" font-size="11" font-family="Inter,sans-serif" text-anchor="start">'+d.p+'%</text>';
+    }
   });
+
   svg+='</svg>';el.innerHTML=svg;
 }
 
@@ -1102,50 +1350,32 @@ function buildBBars(){
   var maxW=0;BB.forEach(function(b){if(b.w>maxW)maxW=b.w;});
   BB.forEach(function(b,i){
     var pct=(b.w/maxW)*100,d=document.createElement("div");
-    d.className="bbar-row";
-    d.setAttribute("role","button");
-    d.setAttribute("tabindex","0");
-    d.setAttribute("aria-label",b.n+", net worth $"+b.w+" billion. Press Enter to see comparisons.");
+    d.className="bbar-row";d.setAttribute("role","listitem");d.setAttribute("tabindex","0");
+    d.setAttribute("aria-label",b.n+", $"+b.w+"B");
     d.innerHTML=
-      '<div class="bbar-meta">'+
-        '<span class="bbar-name">'+b.n+'</span>'+
-        '<span class="bbar-amount" style="color:var(--ink);font-weight:500">$'+b.w+'B</span>'+
-      '</div>'+
-      '<div class="bbar-track" role="presentation">'+
-        '<div data-w="'+pct+'" class="bbar-fill" style="background:'+b.c+';transition-delay:'+(i*0.07)+'s"></div>'+
-      '</div>';
+      '<div class="bbar-meta"><span class="bbar-name">'+b.n+'</span><span class="bbar-amount">$'+b.w+'B</span></div>'+
+      '<div class="bbar-track"><div data-w="'+pct+'" class="bbar-fill" style="transition-delay:'+(i*0.06)+'s"></div></div>';
     (function(bd){
-      d.addEventListener("click",function(){showBCtx(bd);this.setAttribute("aria-pressed","true");});
-      d.addEventListener("keydown",function(e){
-        if(e.key==="Enter"||e.key===" "){e.preventDefault();showBCtx(bd);this.setAttribute("aria-pressed","true");}
-      });
+      d.addEventListener("click",function(){showBCtx(bd)});
+      d.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();showBCtx(bd);}});
     })(b);
     el.appendChild(d);
   });
-  setTimeout(function(){el.querySelectorAll("[data-w]").forEach(function(f){f.style.width=f.getAttribute("data-w")+"%"});},400);
+  setTimeout(function(){el.querySelectorAll("[data-w]").forEach(function(f){f.style.width=f.getAttribute("data-w")+"%"});},300);
 }
 function showBCtx(b){
   var el=document.getElementById("bctx");if(!el)return;
   el.innerHTML=
-    '<strong>'+b.n+' — $'+b.w+' billion</strong><br>'+
-    '· Equal to the combined net worth of '+fmtN(b.w*1e9/192084)+' median American households<br>'+
-    '· '+fmtN(b.w*1e9/192084)+'× the median American net worth ($192K)<br>'+
-    '· Could give every American approximately $'+fmtN(b.w*1e9/335e6)+' each<br>'+
-    '· At 7% annual return, earns $'+fmtN(b.w*1e9*0.07/(365*24*3600))+' per second';
+    '<strong>'+b.n+' · $'+b.w+' billion.</strong> '+
+    'Equal to the combined net worth of '+fmtN(b.w*1e9/192084)+' median American households. '+
+    'Could give every American roughly $'+fmtN(b.w*1e9/335e6)+'. '+
+    'At a 7% annual return, earns $'+fmtN(b.w*1e9*0.07/(365*24*3600))+' per second.';
 }
 
 /* ══════════ CALCULATOR ══════════ */
 function runCalc(){
-  var nwEl=document.getElementById("inNW");
-  var ageEl=document.getElementById("inAge");
-  var nw=parseFloat(nwEl.value)||0;
-  var age=parseInt(ageEl.value)||40;
-
-  // Validate and set aria-invalid
-  var ageInvalid=(age<18||age>99);
-  ageEl.setAttribute("aria-invalid",ageInvalid?"true":"false");
-  if(ageInvalid){age=40;}
-
+  var nw=parseFloat(document.getElementById("inNW").value)||0;
+  var age=parseInt(document.getElementById("inAge").value)||40;
   var ck=getCohort(age),co=COHORTS[ck]||COHORTS["40-44"];
   var op=Math.round(estPerc(nw));
   var coPct="Below 25th";
@@ -1156,46 +1386,46 @@ function runCalc(){
   var cr=document.getElementById("cresults");
   if(cr)cr.innerHTML=
     '<div class="cr"><div class="crl">Overall percentile</div><div class="crv">~'+op+'th</div><div class="crs">vs. all U.S. households</div></div>'+
-    '<div class="cr"><div class="crl">Age cohort ('+ck+')</div><div class="crv" style="font-size:clamp(16px,2.8vw,24px)">'+coPct+'</div><div class="crs">vs. your age group</div></div>'+
-    '<div class="cr"><div class="crl">vs. Median American</div><div class="crv">'+vsM+'×</div><div class="crs">Median = $192,084</div></div>'+
-    '<div class="cr"><div class="crl">Distance to top 1%</div><div class="crv" style="font-size:clamp(14px,2.2vw,22px)">'+(toTop1>0?fmt(toTop1):"You are there")+'</div><div class="crs">Top 1% starts at $13.7M</div></div>';
+    '<div class="cr"><div class="crl">Age cohort ('+ck+')</div><div class="crv" style="font-size:clamp(15px,2.4vw,20px)">'+coPct+'</div><div class="crs">vs. your age group</div></div>'+
+    '<div class="cr"><div class="crl">vs. Median</div><div class="crv">'+vsM+'×</div><div class="crs">Median = $192,084</div></div>'+
+    '<div class="cr"><div class="crl">To top 1%</div><div class="crv" style="color:var(--ink2);font-size:clamp(13px,2vw,18px)">'+(toTop1>0?fmt(toTop1):"You are there")+'</div><div class="crs">Top 1% = $13.7M</div></div>';
 
-  // Use AAA-passing colors on paper background for threshold bars
   var thresholds=[
-    {l:"Bottom 10%",v:440,c:"#a62921",note:"Near zero"},
-    {l:"Median",v:192084,c:"#7a4000",note:"50th percentile"},
-    {l:"Cohort median ("+ck+")",v:co.med,c:"#5c4400",note:"Your age group"},
-    {l:"You",v:nw,c:"#0f2a44",you:true,note:"Your net worth"},
-    {l:"Top 10%",v:1900000,c:"#0f3320",note:"90th percentile"},
-    {l:"Top 1%",v:13666778,c:"#3a1a1a",note:"99th percentile"},
-    {l:"Top 0.1%",v:61827166,c:"#1a1a3a",note:"99.9th percentile"},
+    {l:"Bottom 10%",v:440,c:"#999",note:"Near zero"},
+    {l:"Median",v:192084,c:"#666",note:"50th percentile"},
+    {l:"Cohort median ("+ck+")",v:co.med,c:"#999",note:"Your age group"},
+    {l:"You",v:nw,c:"#d0021b",you:true,note:"Your net worth"},
+    {l:"Top 10%",v:1900000,c:"#444",note:"90th percentile"},
+    {l:"Top 1%",v:13666778,c:"#222",note:"99th percentile"},
+    {l:"Top 0.1%",v:61827166,c:"#121212",note:"99.9th percentile"},
   ].sort(function(a,b){return a.v-b.v});
   var maxL=Math.log10(61827166),minL=Math.log10(440),cb=document.getElementById("cbars");
   if(cb)cb.innerHTML=thresholds.map(function(t){
     var lv=Math.log10(Math.max(t.v,1)),w=((lv-minL)/(maxL-minL))*100;
-    return'<div style="margin-bottom:16px">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;align-items:baseline;flex-wrap:wrap;gap:4px">'+
-        '<div style="display:flex;align-items:center;gap:8px">'+
-          '<span style="font-family:\'Source Serif 4\',serif;font-size:15px;color:var(--ink);font-weight:'+(t.you?600:400)+';font-style:'+(t.you?"normal":"italic")+'">'+t.l+'</span>'+
-          '<span style="font-size:12px;color:var(--dim);font-family:\'DM Mono\',monospace">'+t.note+'</span>'+
+    return'<div style="margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:5px;align-items:baseline;flex-wrap:wrap;gap:4px">'+
+        '<div>'+
+          '<span style="font-family:var(--body);font-size:14px;color:'+(t.you?"var(--ink)":"var(--ink2)")+';font-weight:'+(t.you?"600":"400")+'">'+t.l+'</span>'+
+          '<span style="font-size:11px;color:var(--ink3);font-family:var(--sans);margin-left:8px">'+t.note+'</span>'+
         '</div>'+
-        '<span style="font-size:13px;color:var(--ink);font-family:\'DM Mono\',monospace;font-weight:500">'+fmt(t.v)+'</span>'+
+        '<span style="font-size:13px;color:var(--ink2);font-family:var(--serif);font-weight:600">'+fmt(t.v)+'</span>'+
       '</div>'+
-      '<div style="background:var(--paper3);height:'+(t.you?14:8)+'px;overflow:hidden;border:2px solid var(--rule)" role="progressbar" aria-label="'+t.l+': '+fmt(t.v)+'" aria-valuenow="'+Math.round(w)+'" aria-valuemin="0" aria-valuemax="100">'+
+      '<div style="background:var(--paper2);height:'+(t.you?12:6)+'px;overflow:hidden" role="progressbar" aria-label="'+t.l+'" aria-valuenow="'+Math.round(w)+'" aria-valuemin="0" aria-valuemax="100">'+
         '<div style="height:100%;background:'+t.c+';width:'+w+'%"></div>'+
       '</div></div>';
   }).join("");
+
   var narr="";
-  if(nw<=0)narr="With zero or negative net worth, you are in the bottom 10% — a situation shared by millions carrying student debt or with no assets yet.";
-  else if(nw<50000)narr="Below the 25th percentile. Most wealth is likely in savings or a vehicle, with minimal investment assets.";
-  else if(nw<192084)narr="Between the 25th and 50th percentile — below the median, but with meaningful assets beginning to accumulate.";
-  else if(nw<1000000)narr="Above the median. You are doing better than most Americans, with wealth starting to generate its own returns.";
-  else if(nw<13666778)narr="Top 10% — a level where wealth compounds meaningfully, providing real financial security and options.";
-  else narr="Top 1% of American households. At this level, your wealth likely generates returns exceeding most people's annual income.";
+  if(nw<=0)narr="With zero or negative net worth, you sit in the bottom 10 percent — a position shared by millions of Americans carrying student debt or just starting out.";
+  else if(nw<50000)narr="Below the 25th percentile. Most of your wealth is likely in savings or a vehicle, with little in investment assets.";
+  else if(nw<192084)narr="Between the 25th and 50th percentile. You sit below the median, but have begun to accumulate meaningful assets.";
+  else if(nw<1000000)narr="Above the median. You are doing better than most Americans, and your wealth has begun to generate its own returns.";
+  else if(nw<13666778)narr="Top 10 percent. At this level, wealth compounds meaningfully and provides real financial security.";
+  else narr="Top 1 percent of American households. Wealth at this level likely generates returns exceeding most people's annual income.";
   var cohortNote=nw>co.med
     ?" Compared to your age cohort ("+ck+"), you are above the cohort median of "+fmt(co.med)+"."
-    :" Compared to your age cohort ("+ck+"), you are below the cohort median of "+fmt(co.med)+" — but wealth accumulation tends to accelerate with age.";
-  var cn=document.getElementById("cnarr");if(cn)cn.textContent=narr+cohortNote;
+    :" Compared to your age cohort ("+ck+"), you are below the cohort median of "+fmt(co.med)+" — but wealth tends to accumulate with age.";
+  var cn=document.getElementById("cnarr");if(cn)cn.innerHTML=narr+cohortNote;
 }
 
 /* ══════════ CHAMPAGNE GLASS ══════════ */
@@ -1214,9 +1444,8 @@ function buildChampagneGlass(){
   function resize(){
     var wrap=document.getElementById("cg-canvas-wrap");if(!wrap)return;
     var ww=wrap.clientWidth,wh=wrap.clientHeight;
-    // Portrait: taller than wide, max 340px wide, fill available height
     var w=Math.min(ww,340);
-    var h=Math.min(wh,Math.round(w*1.5));
+    var h=Math.min(wh,Math.round(w*1.45));
     canvas.style.width=w+"px";canvas.style.height=h+"px";
     canvas.width=Math.round(w*DPR);canvas.height=Math.round(h*DPR);
     draw(_cgT);
@@ -1227,30 +1456,24 @@ function buildChampagneGlass(){
     var ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height,cx=W/2;
     ctx.clearRect(0,0,W,H);
 
-    // ── LAYOUT ──────────────────────────────
-    // Match UNDP diagram: very narrow at bottom, explosively wide at top
-    // Bowl occupies most of canvas height, stem+base below
     var padT=H*.04;
-    var bowlTop=padT;           // top of bowl (widest — richest)
-    var bowlBot=padT+H*.68;     // bottom of bowl (narrowest — poorest)
-    var neckW=W*.018;           // near-zero width at bottom (like UNDP)
-    var maxW=W*.44;             // max half-width at top
+    var bowlTop=padT;
+    var bowlBot=padT+H*.68;
+    var neckW=W*.018;
+    var maxW=W*.44;
     var stemH=H*.10;
     var stemBot=bowlBot+stemH;
     var baseW=W*.24;
     var baseH=H*.032;
     var steps=120;
 
-    // Shape: yf=0 is bowl bottom (narrow/poor), yf=1 is bowl top (wide/rich)
-    // Use steep exponential: width grows as yf^2.8 — matches UNDP flare
     function halfW(yf){return neckW+(maxW-neckW)*Math.pow(yf,2.6)}
     function lx(yf){return cx-halfW(yf)}
     function rx(yf){return cx+halfW(yf)}
 
-    // ── CLIP PATH — bowl interior ────────────
+    // Clip path — bowl interior
     ctx.save();
     ctx.beginPath();
-    // bottom of bowl (narrow), trace left wall up, then right wall down
     ctx.moveTo(cx-neckW,bowlBot);
     for(var i=0;i<=steps;i++){
       var yf=i/steps;
@@ -1263,15 +1486,14 @@ function buildChampagneGlass(){
     ctx.closePath();
     ctx.clip();
 
-    // ── BACKGROUND of bowl ───────────────────
-    ctx.fillStyle="#f8f8f6";
+    // Background
+    ctx.fillStyle="#fafafa";
     ctx.fillRect(0,bowlTop,W,bowlBot-bowlTop);
 
-    // ── FILLED LIQUID — bands per stage ──────
+    // Filled liquid
     var ff=Math.min(1,t);
     if(ff>0){
       var fillTopY=bowlBot-(bowlBot-bowlTop)*ff;
-      // Draw as a gradient fill
       var gr=ctx.createLinearGradient(0,fillTopY,0,bowlBot);
       for(var i=0;i<CG_STAGES.length;i++){
         var sf=i/(CG_STAGES.length-1);
@@ -1283,49 +1505,25 @@ function buildChampagneGlass(){
       ctx.fillStyle=gr;
       ctx.fillRect(0,fillTopY,W,bowlBot-fillTopY);
 
-      // Subtle meniscus shimmer line
       if(ff<.98){
         ctx.beginPath();
         var yw=halfW(ff);
         ctx.moveTo(cx-yw,fillTopY);ctx.lineTo(cx+yw,fillTopY);
-        ctx.strokeStyle="rgba(255,255,255,0.6)";ctx.lineWidth=2*DPR;ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,0.5)";ctx.lineWidth=1.5*DPR;ctx.stroke();
       }
-    }
-
-    // ── HATCH PATTERN for richest top section (UNDP style) ──
-    // Only show when filling is near or at the top
-    if(ff>0.75){
-      var hatchAlpha=Math.min(1,(ff-0.75)/0.15);
-      var hatchTop=bowlTop;
-      var hatchBot=bowlBot-(bowlBot-bowlTop)*0.75;
-      ctx.save();
-      // re-clip to just the top region
-      ctx.beginPath();
-      ctx.moveTo(cx-neckW,bowlBot);
-      for(var i=0;i<=steps;i++){var yf=i/steps;ctx.lineTo(lx(yf),bowlBot-(bowlBot-bowlTop)*(i/steps));}
-      for(var i=steps;i>=0;i--){var yf=i/steps;ctx.lineTo(rx(yf),bowlBot-(bowlBot-bowlTop)*(i/steps));}
-      ctx.closePath();ctx.clip();
-      ctx.globalAlpha=hatchAlpha*0.25;
-      ctx.strokeStyle="#1a3a5c";
-      ctx.lineWidth=1;
-      for(var hx=bowlTop-W;hx<cx+maxW+W;hx+=10*DPR){
-        ctx.beginPath();ctx.moveTo(hx,hatchTop);ctx.lineTo(hx+W,hatchTop+W);ctx.stroke();
-      }
-      ctx.globalAlpha=1;
-      ctx.restore();
     }
 
     ctx.restore(); // end clip
 
-    // ── OUTLINE — bowl walls ─────────────────
+    // Outline — bowl walls
     ctx.beginPath();
     ctx.moveTo(cx-neckW,bowlBot);
     for(var i=0;i<=steps;i++){
       var yf=i/steps;
       ctx.lineTo(lx(yf),bowlBot-(bowlBot-bowlTop)*(i/steps));
     }
-    ctx.strokeStyle=CG_STAGES[CG_STAGES.length-1].color;
-    ctx.lineWidth=2*DPR;ctx.stroke();
+    ctx.strokeStyle="#121212";
+    ctx.lineWidth=1.2*DPR;ctx.stroke();
 
     ctx.beginPath();
     ctx.moveTo(cx+neckW,bowlBot);
@@ -1333,140 +1531,90 @@ function buildChampagneGlass(){
       var yf=i/steps;
       ctx.lineTo(rx(yf),bowlBot-(bowlBot-bowlTop)*(i/steps));
     }
-    ctx.strokeStyle=CG_STAGES[CG_STAGES.length-1].color;
-    ctx.lineWidth=2*DPR;ctx.stroke();
+    ctx.strokeStyle="#121212";
+    ctx.lineWidth=1.2*DPR;ctx.stroke();
 
-    // ── STEM ────────────────────────────────
+    // Stem
     var sw=neckW*0.7;
     ctx.beginPath();
     ctx.moveTo(cx-sw,bowlBot);
     ctx.lineTo(cx-sw*0.5,stemBot);
     ctx.lineTo(cx+sw*0.5,stemBot);
     ctx.lineTo(cx+sw,bowlBot);
-    ctx.fillStyle="#e8e4dc";ctx.fill();
-    ctx.strokeStyle="#2d2d2d";ctx.lineWidth=1.2*DPR;ctx.stroke();
+    ctx.fillStyle="#fafafa";ctx.fill();
+    ctx.strokeStyle="#121212";ctx.lineWidth=1*DPR;ctx.stroke();
 
-    // ── BASE ─────────────────────────────────
+    // Base
     ctx.beginPath();
     ctx.ellipse(cx,stemBot+baseH/2,baseW,baseH/2,0,0,Math.PI*2);
-    ctx.fillStyle="#e8e4dc";ctx.fill();
-    ctx.strokeStyle="#2d2d2d";ctx.lineWidth=1.2*DPR;ctx.stroke();
+    ctx.fillStyle="#fafafa";ctx.fill();
+    ctx.strokeStyle="#121212";ctx.lineWidth=1*DPR;ctx.stroke();
 
-    // ── STAGE TICK LABELS — right side ───────
+    // Stage tick labels — right side
     var labelFontSize=Math.round(11*DPR);
-    ctx.font="500 "+labelFontSize+"px 'DM Mono',monospace";
+    ctx.font="500 "+labelFontSize+"px 'Inter',sans-serif";
     ctx.textAlign="left";
     CG_STAGES.forEach(function(s,i){
       var yf=i/(CG_STAGES.length-1);
       var yp=bowlBot-(bowlBot-bowlTop)*yf;
       var rightX=rx(yf);
-
-      // tick line
-      ctx.beginPath();ctx.moveTo(rightX,yp);ctx.lineTo(rightX+10*DPR,yp);
-      ctx.strokeStyle="#2d2d2d";ctx.lineWidth=.8*DPR;ctx.stroke();
-
-      // label — bigger and bolder
-      ctx.font="500 "+Math.round(12*DPR)+"px 'DM Mono',monospace";
-      ctx.fillStyle="#0a0a0a";
-      ctx.fillText(s.wealth,rightX+14*DPR,yp+4*DPR);
+      ctx.beginPath();ctx.moveTo(rightX,yp);ctx.lineTo(rightX+8*DPR,yp);
+      ctx.strokeStyle="#888";ctx.lineWidth=.8*DPR;ctx.stroke();
+      ctx.font="500 "+Math.round(11*DPR)+"px 'Inter',sans-serif";
+      ctx.fillStyle="#666";
+      ctx.fillText(s.wealth,rightX+12*DPR,yp+3*DPR);
     });
 
-    // ── FILL-LEVEL DASHED MARKER ─────────────
+    // Fill-level dashed marker
     if(ff>.015&&ff<.98){
       var my=bowlBot-(bowlBot-bowlTop)*ff;
       var mhw=halfW(ff);
       ctx.beginPath();ctx.moveTo(cx-mhw,my);ctx.lineTo(cx+mhw,my);
-      ctx.strokeStyle=sd.color;ctx.lineWidth=2*DPR;
-      ctx.setLineDash([6*DPR,5*DPR]);ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle=sd.color;ctx.lineWidth=1.5*DPR;
+      ctx.setLineDash([5*DPR,4*DPR]);ctx.stroke();ctx.setLineDash([]);
     }
 
-    // ── UPDATE OVERLAY LABELS + ACCESSIBILITY ──
-    var gn=document.getElementById("cg-big-name");
-    var gp=document.getElementById("cg-big-pct");
+    // Update labels
+    var gn=document.getElementById("cg-stage-label");
+    var gp=document.getElementById("cg-stage-pct");
     var sm=document.getElementById("cg-stat-main");
     var ss=document.getElementById("cg-stat-sub");
     if(gn)gn.textContent=sd.group;
     if(gp){gp.textContent=sd.wealth+" of wealth";gp.style.color=sd.color;}
     if(sm)sm.textContent=sd.stat;
     if(ss)ss.textContent=sd.sub;
-    // Update canvas aria-label so screen readers get current state
-    var wrap=document.getElementById("cg-canvas-wrap");
-    if(wrap){
-      wrap.setAttribute("aria-label","Champagne glass visualization: "+sd.group+" hold "+sd.wealth+" of U.S. wealth. "+sd.stat+".");
-    }
-    // Announce to screen readers only when the stage actually changes
-    if(sd.group!==draw._lastGroup){
-      draw._lastGroup=sd.group;
-      var live=document.getElementById("cg-live");
-      if(live)live.textContent=sd.group+": "+sd.wealth+" of wealth. "+sd.stat;
-    }
   }
   function onScroll(){
     var outer=document.getElementById("cg-outer");if(!outer)return;
     var rect=outer.getBoundingClientRect(),sticky=document.getElementById("cg-sticky-wrap");
     var sH=sticky?sticky.offsetHeight:window.innerHeight;
     var t=Math.max(0,Math.min(1,(-rect.top)/(outer.offsetHeight-sH)));
-    var pf=document.getElementById("cg-progress-fill"),pt=document.getElementById("cg-progress-thumb"),pk=document.getElementById("cg-progress-track");
-    if(pf&&pk){var th=pk.offsetHeight;pf.style.height=(t*th)+"px";if(pt)pt.style.top=(t*th)+"px";}
     if(t>.02){var h=document.getElementById("cg-scroll-hint");if(h)h.style.opacity=Math.max(0,1-t*15)+"";}
     draw(t);
   }
   draw(0);window.addEventListener("scroll",onScroll,{passive:true});
 }
 
-/* ══════════ SCROLL REVEAL ══════════ */
-function initReveal(){
-  if(!window.IntersectionObserver){
-    document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("visible")});
-    triggerAllBars();return;
-  }
-  var obs=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(!e.isIntersecting)return;
-      e.target.classList.add("visible");
-      e.target.querySelectorAll("[data-w]").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%"});
-      e.target.querySelectorAll(".rbar").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%"});
-    });
-  },{threshold:.1,rootMargin:"0px 0px -40px 0px"});
-  document.querySelectorAll(".reveal").forEach(function(el){obs.observe(el)});
-  var rg=document.getElementById("s4-grid");
-  if(rg)new IntersectionObserver(function(entries){entries.forEach(function(e){if(!e.isIntersecting)return;e.target.querySelectorAll(".rbar").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%"});});},{threshold:.15}).observe(rg);
-}
+/* ══════════ TRIGGER BARS ══════════ */
 function triggerAllBars(){
-  document.querySelectorAll("[data-w]").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%"});
-  document.querySelectorAll(".rbar").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%"});
-}
-
-/* ══════════ PROGRESS ══════════ */
-function initScrollProgress(){
-  window.addEventListener("scroll",function(){
-    var total=document.body.scrollHeight-window.innerHeight,pct=total>0?(window.scrollY/total*100):0;
-    var pf=document.getElementById("pf");if(pf)pf.style.width=pct+"%";
-  },{passive:true});
-}
-
-/* ══════════ THEME ══════════ */
-function toggleTheme(){
-  var b=document.body;
-  var btn=document.getElementById("theme-toggle");
-  var label=document.getElementById("theme-label"),icon=document.getElementById("theme-icon");
-  if(b.classList.contains("dark")){
-    b.classList.remove("dark");if(icon)icon.textContent="☀";if(label)label.textContent="Dark";
-    try{localStorage.setItem("lacunae-theme","light");}catch(e){}
-  }else{
-    b.classList.add("dark");if(icon)icon.textContent="☾";if(label)label.textContent="Light";
-    try{localStorage.setItem("lacunae-theme","dark");}catch(e){}
-  }
-}
-function initTheme(){
-  var saved="";try{saved=localStorage.getItem("lacunae-theme")||"";}catch(e){}
-  // default is light (paper); dark is opt-in
+  document.querySelectorAll("[data-w]").forEach(function(el){
+    el.style.width=el.getAttribute("data-w")+"%";
+  });
+  document.querySelectorAll(".rbar").forEach(function(el){
+    el.style.width=el.getAttribute("data-w")+"%";
+  });
 }
 
 /* ══════════ INIT ══════════ */
 window.addEventListener("load",function(){
-  initTheme();buildTicker();buildWBars();buildDots();buildTimeline();buildBBars();
-  buildChampagneGlass();runCalc();initReveal();initScrollProgress();
+  buildTicker();
+  buildWBars();
+  buildDots();
+  buildTimeline();
+  buildBBars();
+  buildChampagneGlass();
+  runCalc();
+  setTimeout(triggerAllBars,200);
 });
 </script>
 </body>
