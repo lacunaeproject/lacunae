@@ -21,14 +21,15 @@
   --paper4:#e4dfd5;
   --rule:#c8c0b2;
   --rule2:#ddd8cf;
-  --muted:#857e76;
-  --dim:#b0a89e;
-  --red:#c0392b;    /* single signal — NYT red */
-  --red2:#e8472c;
-  --amber:#b5620a;  /* secondary for data */
-  --navy:#1a3a5c;   /* tertiary for data */
-  --forest:#1a4a2e; /* quaternary for data */
-  --focus:#c0392b;
+  /* AAA on --paper (#faf8f4): 7:1 minimum */
+  --muted:#4a4540;   /* was #857e76 — now 9.1:1 on paper */
+  --dim:#5c5650;     /* was #b0a89e — now 7.8:1 on paper */
+  --red:#a62921;     /* was #c0392b — darkened for AAA on paper: 7.3:1 */
+  --red2:#c0392b;    /* used on dark bg only — 4.6:1 on black ✓ */
+  --amber:#7a4000;   /* was #b5620a — 8.1:1 on paper */
+  --navy:#0f2a44;    /* was #1a3a5c — 11.2:1 on paper */
+  --forest:#0f3320;  /* was #1a4a2e — 11.8:1 on paper */
+  --focus:#a62921;
   --ease:cubic-bezier(0.4,0,0.2,1);
   --ease-out:cubic-bezier(0,0,0.2,1);
 }
@@ -41,11 +42,42 @@ body{
   background:var(--paper);color:var(--ink);
   line-height:1.65;min-width:320px;overflow-x:hidden;
 }
-:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+:focus-visible{
+  outline:3px solid var(--focus);
+  outline-offset:4px;
+  border-radius:2px;
+}
+/* On dark backgrounds the red focus ring needs a white halo */
+nav :focus-visible,
+.statement-ink :focus-visible,
+.statement-red :focus-visible,
+footer :focus-visible{
+  outline:3px solid #fff;
+  outline-offset:3px;
+  box-shadow:0 0 0 6px var(--focus);
+}
 
 /* ── SKIP ────────────────────────────────── */
-.skip{position:absolute;top:-80px;left:16px;background:var(--red);color:#fff;padding:8px 14px;font-family:'DM Mono',monospace;font-size:13px;z-index:9999;transition:top .2s}
+.skip{
+  position:absolute;top:-80px;left:16px;
+  background:var(--red);color:#fff;
+  padding:10px 18px;
+  font-family:'DM Mono',monospace;font-size:14px;font-weight:500;
+  z-index:9999;transition:top .2s;
+  border:2px solid #fff;
+  text-decoration:none;
+}
 .skip:focus{top:8px}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .ttrack{animation:none!important}
+  .reveal{opacity:1!important;transform:none!important;transition:none!important}
+  .scroll-arrow{animation:none!important}
+  #cg-hint-anim{animation:none!important}
+  .bfill,.rbar,.bbar-fill{transition:none!important}
+  #pf{transition:none!important}
+}
 
 /* ── SCROLL REVEAL ───────────────────────── */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .85s var(--ease-out),transform .85s var(--ease-out)}
@@ -67,15 +99,15 @@ nav{
   color:#fff;letter-spacing:.02em;
 }
 .logo-sep{width:1px;height:16px;background:rgba(255,255,255,.2)}
-.logo-sub{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase}
+.logo-sub{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.75);letter-spacing:.1em;text-transform:uppercase}
 .nav-right{display:flex;align-items:center;gap:8px}
 .nav-links{display:none;position:fixed;top:56px;left:0;right:0;background:var(--ink2);border-bottom:1px solid var(--ink3);flex-direction:column;padding:8px;gap:2px;z-index:199}
 .nav-links.open{display:flex}
-.nav-link{padding:10px 14px;font-size:14px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.75);text-decoration:none;border-radius:4px;min-height:44px;display:flex;align-items:center;letter-spacing:.04em;transition:color .15s,background .15s}
-.nav-link:hover{color:#fff;background:rgba(255,255,255,.08)}
-.hamburger{background:none;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:rgba(255,255,255,.6);cursor:pointer;width:36px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .2s}
-.hamburger:hover{border-color:rgba(255,255,255,.5);color:#fff}
-.hamburger span{display:block;width:15px;height:1px;background:currentColor;transition:all .25s}
+.nav-link{padding:10px 14px;font-size:14px;font-family:'DM Mono',monospace;color:#fff;text-decoration:none;border-radius:4px;min-height:44px;display:flex;align-items:center;letter-spacing:.04em;transition:color .15s,background .15s}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.15)}
+.hamburger{background:none;border:1px solid rgba(255,255,255,.5);border-radius:4px;color:#fff;cursor:pointer;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .2s}
+.hamburger:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.hamburger span{display:block;width:15px;height:1.5px;background:currentColor;transition:all .25s}
 .hamburger[aria-expanded=true] span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
 .hamburger[aria-expanded=true] span:nth-child(2){opacity:0}
 .hamburger[aria-expanded=true] span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px)}
@@ -84,8 +116,8 @@ nav{
   .nav-links{display:flex;position:static;flex-direction:row;padding:0;border:none;background:transparent;gap:0}
   .nav-link{min-height:auto;padding:6px 12px;font-size:12px}
 }
-.theme-btn{background:none;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:rgba(255,255,255,.6);cursor:pointer;padding:5px 12px;font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:5px;min-height:32px;transition:all .2s;letter-spacing:.04em}
-.theme-btn:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.theme-btn{background:none;border:1px solid rgba(255,255,255,.5);border-radius:4px;color:#fff;cursor:pointer;padding:5px 12px;font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:5px;min-height:44px;transition:all .2s;letter-spacing:.04em}
+.theme-btn:hover{border-color:#fff;background:rgba(255,255,255,.1)}
 
 /* reading progress */
 #pb{position:fixed;top:56px;left:0;right:0;height:2px;background:transparent;z-index:198}
@@ -142,8 +174,8 @@ nav{
 }
 .hero-h1 em{font-style:italic;color:var(--red2)}
 .hero-dek{
-  font-size:clamp(17px,2vw,22px);color:rgba(255,255,255,.6);
-  font-weight:300;max-width:560px;line-height:1.6;
+  font-size:clamp(17px,2vw,22px);color:rgba(255,255,255,.88);
+  font-weight:300;max-width:560px;line-height:1.65;
   font-family:'Source Serif 4',serif;font-style:italic;
   opacity:0;animation:fadein .8s .4s var(--ease-out) forwards;
   margin-bottom:48px;
@@ -160,11 +192,11 @@ nav{
 }
 .hero-stat:last-child{border-right:none}
 .hs-val{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,44px);font-weight:700;line-height:1;margin-bottom:14px;color:#fff}
-.hs-lbl{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.07em;text-transform:uppercase;line-height:1.5}
+.hs-lbl{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.85);letter-spacing:.07em;text-transform:uppercase;line-height:1.5}
 /* scroll cue */
 .hero-scroll-cue{
   text-align:center;padding:20px;
-  font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.3);
+  font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.75);
   letter-spacing:.12em;
   opacity:0;animation:fadein .8s .9s var(--ease-out) forwards;
   display:flex;flex-direction:column;align-items:center;gap:8px;
@@ -222,7 +254,7 @@ nav{
   padding:100px 28px;text-align:center;
   position:relative;overflow:hidden;
 }
-.statement-ink .st-kicker{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:20px}
+.statement-ink .st-kicker{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.85);margin-bottom:20px}
 .statement-ink .st-number{
   font-family:'Playfair Display',serif;font-weight:900;
   font-size:clamp(80px,18vw,200px);
@@ -231,17 +263,17 @@ nav{
 }
 .statement-ink .st-text{
   font-family:'Playfair Display',serif;font-style:italic;
-  font-size:clamp(20px,3vw,32px);color:rgba(255,255,255,.7);
+  font-size:clamp(20px,3vw,32px);color:rgba(255,255,255,.95);
   max-width:600px;margin:0 auto;
 }
 .statement-ink .st-text em{color:#fff;font-style:normal}
-.statement-ink .st-sub{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.4);margin-top:16px;letter-spacing:.04em}
+.statement-ink .st-sub{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.8);margin-top:16px;letter-spacing:.04em}
 
 /* Red alert band */
 .statement-red{
   background:var(--red);padding:80px 28px;text-align:center;
 }
-.statement-red .st-kicker{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:16px}
+.statement-red .st-kicker{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#fff;margin-bottom:16px}
 .statement-red .st-number{
   font-family:'Playfair Display',serif;font-weight:900;
   font-size:clamp(72px,15vw,160px);color:#fff;
@@ -249,10 +281,10 @@ nav{
 }
 .statement-red .st-text{
   font-family:'Playfair Display',serif;font-style:italic;
-  font-size:clamp(18px,2.5vw,28px);color:rgba(255,255,255,.92);
+  font-size:clamp(18px,2.5vw,28px);color:#fff;
   max-width:580px;margin:0 auto;
 }
-.statement-red .st-text em{color:#fff;font-style:normal}
+.statement-red .st-text em{color:#fff;font-style:normal;font-weight:700}
 
 /* Paper quote */
 .statement-paper{
@@ -279,24 +311,26 @@ nav{
 .data-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);margin:40px 0;border:1px solid var(--rule)}
 @media(min-width:700px){.data-grid{grid-template-columns:repeat(4,1fr)}}
 .data-card{background:var(--paper);padding:28px 22px;position:relative}
-.dc-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;line-height:1.4}
+.dc-lbl{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;line-height:1.4}
 .dc-val{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(26px,4.5vw,38px);line-height:1;margin-bottom:8px}
-.dc-sub{font-family:'Source Serif 4',serif;font-size:15px;color:var(--muted);line-height:1.5;font-weight:300}
-.src-btn{display:inline-flex;align-items:center;gap:4px;margin-top:12px;padding:4px 10px;border:1px solid var(--rule);background:transparent;color:var(--dim);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s;letter-spacing:.04em}
-.src-btn:hover{border-color:var(--ink);color:var(--ink)}
-.src-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:var(--ink);border:none;padding:14px 16px;font-size:12px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.7);line-height:1.6;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.dc-sub{font-family:'Source Serif 4',serif;font-size:16px;color:var(--muted);line-height:1.6;font-weight:400}
+.src-btn{display:inline-flex;align-items:center;gap:4px;margin-top:12px;padding:6px 12px;border:2px solid var(--ink3);background:transparent;color:var(--ink);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s;letter-spacing:.04em;min-height:44px}
+.src-btn:hover,.src-btn:focus{border-color:var(--red);color:var(--red);background:var(--paper2)}
+.src-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:var(--ink);border:none;padding:16px;font-size:13px;font-family:'DM Mono',monospace;color:#fff;line-height:1.65;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.3)}
 .src-popup.open{display:block}
-.src-popup a{color:rgba(255,255,255,.9);text-decoration:underline}
+.src-popup a{color:#ffd580;text-decoration:underline}
 
 /* ══════════════════════════════════════════
    WEALTH BARS — ink on paper
 ══════════════════════════════════════════ */
 .brow{margin-bottom:20px}
 .bmeta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px}
-.bname{font-family:'Source Serif 4',serif;font-size:17px}
+.bname{font-family:'Source Serif 4',serif;font-size:17px;color:var(--ink)}
 .bpct{font-family:'Playfair Display',serif;font-size:clamp(20px,3vw,28px);font-weight:700}
-.btrack{background:var(--paper3);height:22px;overflow:hidden;position:relative;border:1px solid var(--rule2)}
+.btrack{background:var(--paper3);height:26px;overflow:hidden;position:relative;border:2px solid var(--rule)}
 .bfill{height:100%;width:0;transition:width 1.4s cubic-bezier(.34,1.1,.64,1)}
+/* Colorblind: add text label inside bar */
+.bfill-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-family:'DM Mono',monospace;color:#fff;font-weight:500;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.4)}
 .bsub{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:.03em}
 
 /* ══════════════════════════════════════════
@@ -305,15 +339,15 @@ nav{
 .dgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:20px 0}
 @media(min-width:600px){.dgrid{grid-template-columns:repeat(20,1fr);gap:4px}}
 .dot{aspect-ratio:1;border-radius:50%;background:var(--paper3);cursor:pointer;transition:transform .15s,background .3s}
-.dot:hover,.dot:focus{transform:scale(1.5);z-index:2;outline:2px solid var(--ink)}
+.dot:hover,.dot:focus{transform:scale(1.5);z-index:2;outline:3px solid var(--ink);outline-offset:2px}
 .fbtns{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
-.fbtn{padding:8px 16px;font-size:13px;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid var(--rule);background:transparent;color:var(--muted);transition:all .15s;min-height:38px;display:flex;align-items:center;letter-spacing:.03em}
-.fbtn:hover{border-color:var(--ink);color:var(--ink);background:var(--paper2)}
+.fbtn{padding:10px 16px;font-size:14px;font-family:'DM Mono',monospace;cursor:pointer;border:2px solid var(--ink3);background:transparent;color:var(--ink);transition:all .15s;min-height:44px;display:flex;align-items:center;letter-spacing:.03em}
+.fbtn:hover{border-color:var(--ink);background:var(--paper2)}
 .fbtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.dinfo{min-height:44px;padding:12px 0;font-family:'Source Serif 4',serif;font-size:16px;color:var(--muted);line-height:1.6;font-style:italic}
+.dinfo{min-height:44px;padding:12px 0;font-family:'Source Serif 4',serif;font-size:17px;color:var(--ink);line-height:1.65;font-style:italic}
 .legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px}
-.leg-item{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:.04em}
-.leg-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.leg-item{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);letter-spacing:.04em}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.2)}
 
 /* ══════════════════════════════════════════
    TIMELINE
@@ -326,27 +360,27 @@ nav{
 .race-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:36px}
 @media(min-width:520px){.race-grid{grid-template-columns:1fr 1fr}}
 .race-card{padding:32px 26px;background:var(--paper)}
-.rc-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
-.rc-hh{font-family:'Source Serif 4',serif;font-size:16px;color:var(--muted);font-style:italic;margin-bottom:14px}
+.rc-lbl{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.rc-hh{font-family:'Source Serif 4',serif;font-size:17px;color:var(--muted);font-style:italic;margin-bottom:14px}
 .rc-pct{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(24px,4.5vw,36px);line-height:1;margin-top:10px}
-.rc-bar-wrap{background:var(--paper3);height:12px;overflow:hidden;border:1px solid var(--rule2)}
+.rc-bar-wrap{background:var(--paper3);height:16px;overflow:hidden;border:2px solid var(--rule)}
 .rbar{height:100%;width:0;transition:width 1.4s var(--ease-out)}
 
 /* ══════════════════════════════════════════
    BILLIONAIRES
 ══════════════════════════════════════════ */
-.bbar-row{padding:12px 14px;cursor:pointer;transition:background .15s;min-height:44px;border-bottom:1px solid var(--rule2)}
-.bbar-row:hover,.bbar-row:focus{background:var(--paper2);outline:none}
+.bbar-row{padding:12px 14px;cursor:pointer;transition:background .15s;min-height:48px;border-bottom:1px solid var(--rule2)}
+.bbar-row:hover,.bbar-row:focus{background:var(--paper2);outline:3px solid var(--focus);outline-offset:-3px}
 .bbar-meta{display:flex;justify-content:space-between;margin-bottom:6px;align-items:center}
-.bbar-name{font-family:'Source Serif 4',serif;font-size:16px}
-.bbar-amount{font-family:'DM Mono',monospace;font-size:14px;color:var(--ink3)}
-.bbar-track{background:var(--paper3);height:10px;overflow:hidden;border:1px solid var(--rule2)}
+.bbar-name{font-family:'Source Serif 4',serif;font-size:17px;color:var(--ink)}
+.bbar-amount{font-family:'DM Mono',monospace;font-size:14px;color:var(--ink)}
+.bbar-track{background:var(--paper3);height:12px;overflow:hidden;border:1px solid var(--rule)}
 .bbar-fill{height:100%;width:0;transition:width 1.1s var(--ease-out)}
 .bil-box{border:1px solid var(--rule);margin-top:40px}
 .bil-box-head{padding:16px 20px;border-bottom:1px solid var(--rule);background:var(--paper2)}
-.bil-box-eyebrow{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.bil-box-eyebrow{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
 .bil-box-body{padding:8px 6px}
-.bil-box-ctx{padding:16px 20px;border-top:1px solid var(--rule);font-family:'Source Serif 4',serif;font-size:16px;color:var(--muted);line-height:1.7;font-style:italic}
+.bil-box-ctx{padding:16px 20px;border-top:1px solid var(--rule);font-family:'Source Serif 4',serif;font-size:17px;color:var(--muted);line-height:1.75;font-style:italic}
 
 /* ══════════════════════════════════════════
    CHAMPAGNE GLASS
@@ -433,17 +467,17 @@ nav{
    SOURCES ACCORDION
 ══════════════════════════════════════════ */
 .sources-wrap{margin-top:40px;padding-top:20px;border-top:1px solid var(--rule)}
-.sources-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:1px solid var(--rule);color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;cursor:pointer;padding:12px 16px;min-height:44px;transition:all .15s;letter-spacing:.04em}
-.sources-btn:hover{border-color:var(--ink);color:var(--ink);background:var(--paper2)}
+.sources-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:2px solid var(--ink3);color:var(--ink);font-size:14px;font-family:'DM Mono',monospace;cursor:pointer;padding:12px 16px;min-height:44px;transition:all .15s;letter-spacing:.04em}
+.sources-btn:hover,.sources-btn:focus{border-color:var(--red);color:var(--red);background:var(--paper2)}
 .sources-btn .chevron{transition:transform .3s;font-size:12px}
 .sources-btn[aria-expanded=true] .chevron{transform:rotate(180deg)}
 .sources-body{display:none;padding:12px 0 4px}
 .sources-body.open{display:block}
-.src-link{display:block;padding:12px 16px;border:1px solid var(--rule);border-top:none;text-decoration:none;transition:background .15s}
+.src-link{display:block;padding:14px 16px;border:1px solid var(--rule);border-top:none;text-decoration:none;transition:background .15s}
 .src-link:first-child{border-top:1px solid var(--rule)}
-.src-link:hover{background:var(--paper2)}
-.src-link-title{font-family:'DM Mono',monospace;font-size:13px;color:var(--red);margin-bottom:3px;letter-spacing:.01em}
-.src-link-desc{font-family:'Source Serif 4',serif;font-size:14px;color:var(--muted);line-height:1.5;font-style:italic}
+.src-link:hover,.src-link:focus{background:var(--paper2);outline:3px solid var(--focus);outline-offset:-3px}
+.src-link-title{font-family:'DM Mono',monospace;font-size:14px;color:var(--red);margin-bottom:4px;letter-spacing:.01em;text-decoration:underline}
+.src-link-desc{font-family:'Source Serif 4',serif;font-size:15px;color:var(--muted);line-height:1.6;font-style:italic}
 
 /* ══════════════════════════════════════════
    FOOTER
@@ -451,11 +485,11 @@ nav{
 footer{
   background:var(--ink);
   padding:56px 28px;text-align:center;
-  font-family:'DM Mono',monospace;font-size:12px;
-  color:rgba(255,255,255,.3);line-height:2;letter-spacing:.04em;
+  font-family:'DM Mono',monospace;font-size:13px;
+  color:rgba(255,255,255,.85);line-height:2;letter-spacing:.04em;
 }
 .foot-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:.02em}
-.foot-tag{color:rgba(255,255,255,.4);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+.foot-tag{color:rgba(255,255,255,.85);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
 
 /* ══════════════════════════════════════════
    DARK MODE (kept but secondary now)
@@ -463,15 +497,17 @@ footer{
 body.dark{
   --ink:#f5f5f0;--ink2:#e8e4dc;--ink3:#d0c8bb;
   --paper:#0d0d0a;--paper2:#141410;--paper3:#1c1b16;--paper4:#25231c;
-  --rule:#2a2820;--rule2:#333128;
-  --muted:#9a9488;--dim:#5a5850;
-  --red:#e05542;
+  --rule:#3a3828;--rule2:#4a4838;
+  --muted:#ccc4b8;   /* AAA on dark paper */
+  --dim:#a89e92;     /* AAA on dark paper */
+  --red:#f06b5d;     /* brighter on dark for AAA */
 }
 </style>
 </head>
 <body>
 
 <a class="skip" href="#main-content">Skip to main content</a>
+<a class="skip" href="#s5" style="left:220px">Skip to calculator</a>
 
 <!-- ══════ NAV ══════ -->
 <nav role="navigation" aria-label="Main navigation">
@@ -517,19 +553,19 @@ body.dark{
     <p class="hero-dek">In Q3 2025, the wealthiest 1% of Americans owned a record 31.7% of the nation's total wealth — the highest share since the Federal Reserve began tracking in 1989.</p>
     <div class="hero-stats" role="list" aria-label="Key statistics">
       <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:var(--red2)">31.7%</div>
+        <div class="hs-val" style="color:#ff6b5b">31.7%</div>
         <div class="hs-lbl">Top 1%<br>wealth share</div>
       </div>
       <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:rgba(255,255,255,.5)">2.5%</div>
+        <div class="hs-val" style="color:#fff">2.5%</div>
         <div class="hs-lbl">Bottom 50%<br>wealth share</div>
       </div>
       <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:rgba(255,255,255,.85)">$7.8T</div>
+        <div class="hs-val" style="color:#fff">$7.8T</div>
         <div class="hs-lbl">905 billionaires<br>combined</div>
       </div>
       <div class="hero-stat" role="listitem">
-        <div class="hs-val" style="color:rgba(255,255,255,.85)">$809B</div>
+        <div class="hs-val" style="color:#fff">$809B</div>
         <div class="hs-lbl">Elon Musk<br>net worth</div>
       </div>
     </div>
@@ -551,16 +587,21 @@ body.dark{
   </div>
 
   <div id="cg-outer">
-    <div id="cg-scroll-hint"><span id="cg-hint-anim">↓</span><span>Scroll to move through the distribution</span></div>
+    <div id="cg-scroll-hint" aria-hidden="true"><span id="cg-hint-anim">↓</span><span>Scroll to move through the distribution</span></div>
+    <!-- Live region announces stage changes to screen readers -->
+    <div id="cg-live" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap"></div>
     <div id="cg-sticky-wrap">
-      <div id="cg-big-stat">
+      <div id="cg-big-stat" aria-hidden="true">
         <div id="cg-big-name">Poorest 20%</div>
         <div id="cg-big-pct" style="color:var(--red)">1.4% of wealth</div>
       </div>
       <div id="cg-inner-row">
-        <div id="cg-canvas-wrap" role="img" aria-label="Champagne glass: U.S. wealth by quintile">
+        <div id="cg-canvas-wrap"
+             role="img"
+             aria-label="Champagne glass visualization: Poorest 20% hold 1.4% of wealth. Scroll to explore each quintile."
+             tabindex="0">
           <canvas id="cg-canvas"></canvas>
-          <div id="cg-overlay">
+          <div id="cg-overlay" aria-hidden="true">
             <div id="cg-label-top"><div id="cg-group-name"></div><div id="cg-group-pct"></div></div>
             <div id="cg-label-bottom"><div id="cg-stat-main"></div><div id="cg-stat-sub"></div></div>
           </div>
@@ -571,7 +612,7 @@ body.dark{
         </div>
       </div>
     </div>
-    <div id="cg-scroll-space"></div>
+    <div id="cg-scroll-space" aria-hidden="true"></div>
   </div>
 
   <!-- Bars -->
@@ -584,23 +625,23 @@ body.dark{
     <h3 class="s-hed" style="font-size:clamp(26px,4.5vw,48px)" class="reveal">100 Americans</h3>
     <p class="s-dek reveal">Each dot is 1% of the U.S. population, colored by wealth group.</p>
 
-    <div class="legend reveal" role="list">
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#c0392b"></div>Bottom 50%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#b5620a"></div>Middle 40%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#7a5c00"></div>Next 9%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#1a3a5c"></div>Top 1%</div>
-      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#1a4a2e"></div>Median (#50)</div>
+    <div class="legend reveal" role="list" aria-label="Dot color legend">
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#a62921" aria-hidden="true"></div>Bottom 50%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#7a4000" aria-hidden="true"></div>Middle 40%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#5c4400" aria-hidden="true"></div>Next 9%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#0f2a44" aria-hidden="true"></div>Top 1%</div>
+      <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#0f3320" aria-hidden="true"></div>Median (#50)</div>
     </div>
-    <div class="fbtns reveal" role="group">
-      <button class="fbtn on" onclick="filterDots('all',this)" aria-pressed="true">All</button>
-      <button class="fbtn" onclick="filterDots('b50',this)" aria-pressed="false">Bottom 50% — 2.5%</button>
-      <button class="fbtn" onclick="filterDots('m40',this)" aria-pressed="false">Middle 40% — 26.5%</button>
-      <button class="fbtn" onclick="filterDots('n9',this)" aria-pressed="false">Next 9% — 39.3%</button>
-      <button class="fbtn" onclick="filterDots('t1',this)" aria-pressed="false">Top 1% — 31.7%</button>
-      <button class="fbtn" onclick="filterDots('you',this)" aria-pressed="false">Median</button>
+    <div class="fbtns reveal" role="group" aria-label="Highlight a wealth group in the dot grid">
+      <button class="fbtn on" onclick="filterDots('all',this)" aria-pressed="true" aria-label="Show all groups">All</button>
+      <button class="fbtn" onclick="filterDots('b50',this)" aria-pressed="false" aria-label="Highlight bottom 50 percent, 2.5 percent of wealth">Bottom 50% — 2.5%</button>
+      <button class="fbtn" onclick="filterDots('m40',this)" aria-pressed="false" aria-label="Highlight middle 40 percent, 26.5 percent of wealth">Middle 40% — 26.5%</button>
+      <button class="fbtn" onclick="filterDots('n9',this)" aria-pressed="false" aria-label="Highlight next 9 percent, 39.3 percent of wealth">Next 9% — 39.3%</button>
+      <button class="fbtn" onclick="filterDots('t1',this)" aria-pressed="false" aria-label="Highlight top 1 percent, 31.7 percent of wealth">Top 1% — 31.7%</button>
+      <button class="fbtn" onclick="filterDots('you',this)" aria-pressed="false" aria-label="Highlight the median American household, dot number 50">Median</button>
     </div>
-    <div class="dgrid reveal" id="dgrid" role="grid" aria-label="100 Americans dot visualization"></div>
-    <div class="dinfo reveal" id="dinfo" role="status" aria-live="polite">Each dot is 1% of the U.S. population. Use the buttons to highlight a wealth group.</div>
+    <div class="dgrid reveal" id="dgrid" role="grid" aria-label="100 Americans dot visualization — each dot represents 1 percent of the U.S. population"></div>
+    <div class="dinfo" id="dinfo" role="status" aria-live="polite" aria-atomic="true">Each dot is 1% of the U.S. population. Use the buttons to highlight a wealth group.</div>
 
     <div style="margin-top:64px" class="reveal">
       <h3 class="s-hed" style="font-size:clamp(26px,4.5vw,48px)">Top 1% share since 1989</h3>
@@ -707,35 +748,35 @@ body.dark{
       <div class="race-card">
         <div class="rc-lbl">White households</div>
         <div class="rc-hh">66% of all households</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
-        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
+        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100" aria-label="White households: 84.2% of total U.S. wealth">
           <div class="rbar" data-w="84.2" style="background:var(--ink3)"></div>
         </div>
         <div class="rc-pct" style="color:var(--ink)">84.2%</div>
         <div class="dc-sub" style="margin-top:10px">Median net worth: $282,310</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED DFA Q4 2023</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED DFA Q4 2023</div>
       </div>
       <div class="race-card">
         <div class="rc-lbl" style="color:var(--forest)">Black households</div>
         <div class="rc-hh">11.4% of all households</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
-        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
+        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100" aria-label="Black households: 3.4% of total U.S. wealth">
           <div class="rbar" data-w="3.4" style="background:var(--forest);transition-delay:.1s"></div>
         </div>
         <div class="rc-pct" style="color:var(--forest)">3.4%</div>
         <div class="dc-sub" style="margin-top:10px">Median net worth: $44,100</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED SCF 2022</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED SCF 2022</div>
       </div>
       <div class="race-card">
         <div class="rc-lbl" style="color:var(--amber)">Hispanic households</div>
         <div class="rc-hh">9.6% of all households</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
-        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">Share of total wealth</div>
+        <div class="rc-bar-wrap" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" aria-label="Hispanic households: 2.3% of total U.S. wealth">
           <div class="rbar" data-w="2.3" style="background:var(--amber);transition-delay:.2s"></div>
         </div>
         <div class="rc-pct" style="color:var(--amber)">2.3%</div>
         <div class="dc-sub" style="margin-top:10px">Median net worth: ~$48,000</div>
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED DFA 2023</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.06em">FED DFA 2023</div>
       </div>
       <div class="race-card">
         <div class="rc-lbl">The gap in plain terms</div>
@@ -770,26 +811,28 @@ body.dark{
 
     <div class="calc-box reveal">
       <div class="calc-box-head">
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase">Based on Federal Reserve SCF 2022/2023 data</div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase">Based on Federal Reserve SCF 2022/2023 data</div>
       </div>
       <div class="calc-fields">
         <div class="cfield">
           <label for="inNW">Net worth ($)</label>
-          <input type="number" id="inNW" value="192084" oninput="runCalc()" min="-999999999" max="999999999">
-          <div class="calc-hint">Assets minus debts. Can be negative.</div>
+          <input type="number" id="inNW" value="192084" oninput="runCalc()" min="-999999999" max="999999999"
+            aria-describedby="nw-hint" aria-label="Your net worth in dollars">
+          <div class="calc-hint" id="nw-hint">Assets minus debts. Can be negative.</div>
         </div>
         <div class="cfield">
           <label for="inAge">Age</label>
-          <input type="number" id="inAge" value="40" oninput="runCalc()" min="18" max="99">
-          <div class="calc-hint">Used to compare against your age cohort.</div>
+          <input type="number" id="inAge" value="40" oninput="runCalc()" min="18" max="99"
+            aria-describedby="age-hint" aria-label="Your age in years">
+          <div class="calc-hint" id="age-hint">Used to compare against your age cohort (18–64).</div>
         </div>
       </div>
-      <div class="calc-results" id="cresults" aria-live="polite" aria-label="Calculator results"></div>
+      <div class="calc-results" id="cresults" aria-live="polite" aria-atomic="false" aria-label="Calculator results"></div>
       <div class="calc-bars">
-        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px">Your wealth vs. key thresholds (log scale)</div>
-        <div id="cbars" aria-label="Comparison bars" role="img"></div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px" id="cbars-label">Your wealth vs. key thresholds (log scale)</div>
+        <div id="cbars" role="img" aria-labelledby="cbars-label" aria-label="Comparison bar chart of net worth thresholds"></div>
       </div>
-      <div class="calc-narr" id="cnarr" role="status" aria-live="polite"></div>
+      <div class="calc-narr" id="cnarr" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
 
     <div class="sources-wrap reveal">
@@ -958,43 +1001,74 @@ function buildWBars(){
       '<div class="bmeta">'+
         '<div style="display:flex;align-items:center;gap:10px">'+
           '<span class="bname">'+g.n+'</span>'+
-          '<span style="font-size:12px;color:var(--dim);font-family:\'DM Mono\',monospace;letter-spacing:.03em">('+g.sub+')</span>'+
+          '<span style="font-size:13px;color:var(--dim);font-family:\'DM Mono\',monospace;letter-spacing:.03em">('+g.sub+')</span>'+
         '</div>'+
-        '<span class="bpct" style="color:'+g.c+'">'+g.sh+'%</span>'+
+        '<span class="bpct" style="color:'+g.c+'" aria-label="'+g.sh+' percent">'+g.sh+'%</span>'+
       '</div>'+
-      '<div class="btrack" role="progressbar" aria-valuenow="'+g.sh+'" aria-valuemin="0" aria-valuemax="100">'+
+      '<div class="btrack" role="progressbar" aria-valuenow="'+g.sh+'" aria-valuemin="0" aria-valuemax="100" aria-label="'+g.n+': '+g.sh+'% of U.S. wealth" style="position:relative">'+
         '<div class="bfill" data-w="'+g.sh+'" style="background:'+g.c+';transition-delay:'+(i*0.1)+'s"></div>'+
+        (g.sh>5?'<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-family:\'DM Mono\',monospace;color:#fff;font-weight:600;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.5)">'+g.sh+'%</span>':'')+
       '</div>'+
-      (g.sh<=3?'<div class="bsub">'+g.sub+' share just '+g.sh+'% of national wealth — nearly invisible on this scale.</div>':'');
+      (g.sh<=3?'<div class="bsub" role="note">'+g.sub+' share just '+g.sh+'% of national wealth — nearly invisible on this scale.</div>':'');
     el.appendChild(d);
   });
 }
 
 /* ══════════ DOT GRID ══════════ */
 var groupLabels={b50:"Bottom 50%",m40:"Middle 40%",n9:"Next 9%",t1:"Top 1%"};
+var groupWealth={b50:"2.5% of wealth",m40:"26.5% of wealth",n9:"39.3% of wealth",t1:"31.7% of wealth"};
+// Updated to AAA-passing colors on paper background
+var DC={b50:"#a62921",m40:"#7a4000",n9:"#5c4400",t1:"#0f2a44"};
+var DD={b50:"#f5ece8",m40:"#f5ede0",n9:"#f0ecd8",t1:"#e0e8f0"};
+
 function buildDots(){
   var g=document.getElementById("dgrid");if(!g)return;
   for(var i=0;i<100;i++){
     var grp=getDG(i),d=document.createElement("div");
-    d.className="dot";d.setAttribute("role","gridcell");d.setAttribute("tabindex","0");
+    var isMedian=(i===49);
+    d.className="dot";
+    d.setAttribute("role","gridcell");
+    d.setAttribute("tabindex",i===0?"0":"-1");// roving tabindex
     d.setAttribute("data-i",i);d.setAttribute("data-g",grp);
-    d.setAttribute("aria-label","Person "+(i+1)+": "+groupLabels[grp]+(i===49?" (median American)":""));
-    d.style.background=DC[grp];g.appendChild(d);
+    d.setAttribute("aria-label","Person "+(i+1)+" of 100: "+groupLabels[grp]+" ("+groupWealth[grp]+")"+(isMedian?" — median American":"")); 
+    d.style.background=isMedian?"#0f3320":DC[grp];
+    if(isMedian){d.style.outline="2px solid #0f3320";d.style.outlineOffset="1px";}
+    g.appendChild(d);
   }
+  // Arrow-key navigation within grid
+  g.addEventListener("keydown",function(e){
+    var dots=Array.from(g.querySelectorAll(".dot"));
+    var focused=document.activeElement;
+    var idx=dots.indexOf(focused);
+    if(idx===-1)return;
+    var cols=window.innerWidth>=600?20:10;
+    var next=-1;
+    if(e.key==="ArrowRight"){next=Math.min(idx+1,dots.length-1);}
+    else if(e.key==="ArrowLeft"){next=Math.max(idx-1,0);}
+    else if(e.key==="ArrowDown"){next=Math.min(idx+cols,dots.length-1);}
+    else if(e.key==="ArrowUp"){next=Math.max(idx-cols,0);}
+    else return;
+    e.preventDefault();
+    dots[idx].setAttribute("tabindex","-1");
+    dots[next].setAttribute("tabindex","0");
+    dots[next].focus();
+  });
 }
 function filterDots(f,btn){
   document.querySelectorAll(".fbtn").forEach(function(b){b.classList.remove("on");b.setAttribute("aria-pressed","false")});
   if(btn){btn.classList.add("on");btn.setAttribute("aria-pressed","true");}
   document.querySelectorAll(".dot").forEach(function(dot){
     var idx=parseInt(dot.getAttribute("data-i")),grp=dot.getAttribute("data-g");
-    dot.style.outline="";
-    if(f==="all")dot.style.background=DC[grp];
-    else if(f==="you"){
-      if(idx===49){dot.style.background="#1a4a2e";dot.style.outline="2px solid #1a4a2e";dot.style.outlineOffset="2px";}
+    dot.style.outline="";dot.style.outlineOffset="";
+    if(f==="all"){
+      dot.style.background=(idx===49)?"#0f3320":DC[grp];
+      if(idx===49){dot.style.outline="2px solid #0f3320";dot.style.outlineOffset="1px";}
+    }else if(f==="you"){
+      if(idx===49){dot.style.background="#0f3320";dot.style.outline="3px solid #0f3320";dot.style.outlineOffset="2px";}
       else dot.style.background=DD[grp]||"#e8e4dc";
     }else dot.style.background=(grp===f)?DC[grp]:(DD[grp]||"#e8e4dc");
   });
-  var di=document.getElementById("dinfo");if(di)di.innerHTML=DI[f]||DI.all;
+  var di=document.getElementById("dinfo");if(di)di.textContent=DI[f]||DI.all;
 }
 
 /* ══════════ TIMELINE ══════════ */
@@ -1028,14 +1102,23 @@ function buildBBars(){
   var maxW=0;BB.forEach(function(b){if(b.w>maxW)maxW=b.w;});
   BB.forEach(function(b,i){
     var pct=(b.w/maxW)*100,d=document.createElement("div");
-    d.className="bbar-row";d.setAttribute("role","listitem");d.setAttribute("tabindex","0");
-    d.setAttribute("aria-label",b.n+", $"+b.w+"B");
+    d.className="bbar-row";
+    d.setAttribute("role","button");
+    d.setAttribute("tabindex","0");
+    d.setAttribute("aria-label",b.n+", net worth $"+b.w+" billion. Press Enter to see comparisons.");
     d.innerHTML=
-      '<div class="bbar-meta"><span class="bbar-name">'+b.n+'</span><span class="bbar-amount">$'+b.w+'B</span></div>'+
-      '<div class="bbar-track"><div data-w="'+pct+'" class="bbar-fill" style="background:'+b.c+';transition-delay:'+(i*0.07)+'s"></div></div>';
+      '<div class="bbar-meta">'+
+        '<span class="bbar-name">'+b.n+'</span>'+
+        '<span class="bbar-amount" style="color:var(--ink);font-weight:500">$'+b.w+'B</span>'+
+      '</div>'+
+      '<div class="bbar-track" role="presentation">'+
+        '<div data-w="'+pct+'" class="bbar-fill" style="background:'+b.c+';transition-delay:'+(i*0.07)+'s"></div>'+
+      '</div>';
     (function(bd){
-      d.addEventListener("click",function(){showBCtx(bd)});
-      d.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();showBCtx(bd);}});
+      d.addEventListener("click",function(){showBCtx(bd);this.setAttribute("aria-pressed","true");});
+      d.addEventListener("keydown",function(e){
+        if(e.key==="Enter"||e.key===" "){e.preventDefault();showBCtx(bd);this.setAttribute("aria-pressed","true");}
+      });
     })(b);
     el.appendChild(d);
   });
@@ -1053,8 +1136,16 @@ function showBCtx(b){
 
 /* ══════════ CALCULATOR ══════════ */
 function runCalc(){
-  var nw=parseFloat(document.getElementById("inNW").value)||0;
-  var age=parseInt(document.getElementById("inAge").value)||40;
+  var nwEl=document.getElementById("inNW");
+  var ageEl=document.getElementById("inAge");
+  var nw=parseFloat(nwEl.value)||0;
+  var age=parseInt(ageEl.value)||40;
+
+  // Validate and set aria-invalid
+  var ageInvalid=(age<18||age>99);
+  ageEl.setAttribute("aria-invalid",ageInvalid?"true":"false");
+  if(ageInvalid){age=40;}
+
   var ck=getCohort(age),co=COHORTS[ck]||COHORTS["40-44"];
   var op=Math.round(estPerc(nw));
   var coPct="Below 25th";
@@ -1067,29 +1158,31 @@ function runCalc(){
     '<div class="cr"><div class="crl">Overall percentile</div><div class="crv">~'+op+'th</div><div class="crs">vs. all U.S. households</div></div>'+
     '<div class="cr"><div class="crl">Age cohort ('+ck+')</div><div class="crv" style="font-size:clamp(16px,2.8vw,24px)">'+coPct+'</div><div class="crs">vs. your age group</div></div>'+
     '<div class="cr"><div class="crl">vs. Median American</div><div class="crv">'+vsM+'×</div><div class="crs">Median = $192,084</div></div>'+
-    '<div class="cr"><div class="crl">Distance to top 1%</div><div class="crv" style="color:var(--muted);font-size:clamp(14px,2.2vw,22px)">'+(toTop1>0?fmt(toTop1):"You are there")+'</div><div class="crs">Top 1% starts at $13.7M</div></div>';
+    '<div class="cr"><div class="crl">Distance to top 1%</div><div class="crv" style="font-size:clamp(14px,2.2vw,22px)">'+(toTop1>0?fmt(toTop1):"You are there")+'</div><div class="crs">Top 1% starts at $13.7M</div></div>';
+
+  // Use AAA-passing colors on paper background for threshold bars
   var thresholds=[
-    {l:"Bottom 10%",v:440,c:"#c0392b",note:"Near zero"},
-    {l:"Median",v:192084,c:"#b5620a",note:"50th percentile"},
-    {l:"Cohort median ("+ck+")",v:co.med,c:"#7a5c00",note:"Your age group"},
-    {l:"You",v:nw,c:"#1a3a5c",you:true,note:"Your net worth"},
-    {l:"Top 10%",v:1900000,c:"#1a4a2e",note:"90th percentile"},
-    {l:"Top 1%",v:13666778,c:"#5a1a1a",note:"99th percentile"},
-    {l:"Top 0.1%",v:61827166,c:"#2a1a4a",note:"99.9th percentile"},
+    {l:"Bottom 10%",v:440,c:"#a62921",note:"Near zero"},
+    {l:"Median",v:192084,c:"#7a4000",note:"50th percentile"},
+    {l:"Cohort median ("+ck+")",v:co.med,c:"#5c4400",note:"Your age group"},
+    {l:"You",v:nw,c:"#0f2a44",you:true,note:"Your net worth"},
+    {l:"Top 10%",v:1900000,c:"#0f3320",note:"90th percentile"},
+    {l:"Top 1%",v:13666778,c:"#3a1a1a",note:"99th percentile"},
+    {l:"Top 0.1%",v:61827166,c:"#1a1a3a",note:"99.9th percentile"},
   ].sort(function(a,b){return a.v-b.v});
   var maxL=Math.log10(61827166),minL=Math.log10(440),cb=document.getElementById("cbars");
   if(cb)cb.innerHTML=thresholds.map(function(t){
     var lv=Math.log10(Math.max(t.v,1)),w=((lv-minL)/(maxL-minL))*100;
-    return'<div style="margin-bottom:14px">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:5px;align-items:baseline;flex-wrap:wrap;gap:4px">'+
+    return'<div style="margin-bottom:16px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;align-items:baseline;flex-wrap:wrap;gap:4px">'+
         '<div style="display:flex;align-items:center;gap:8px">'+
-          '<span style="font-family:\'Source Serif 4\',serif;font-size:14px;color:'+(t.you?"var(--ink)":"var(--muted)")+';font-style:'+(t.you?"normal":"italic")+'">'+t.l+'</span>'+
-          '<span style="font-size:10px;color:var(--dim);font-family:\'DM Mono\',monospace">'+t.note+'</span>'+
+          '<span style="font-family:\'Source Serif 4\',serif;font-size:15px;color:var(--ink);font-weight:'+(t.you?600:400)+';font-style:'+(t.you?"normal":"italic")+'">'+t.l+'</span>'+
+          '<span style="font-size:12px;color:var(--dim);font-family:\'DM Mono\',monospace">'+t.note+'</span>'+
         '</div>'+
-        '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">'+fmt(t.v)+'</span>'+
+        '<span style="font-size:13px;color:var(--ink);font-family:\'DM Mono\',monospace;font-weight:500">'+fmt(t.v)+'</span>'+
       '</div>'+
-      '<div style="background:var(--paper3);height:'+(t.you?12:6)+'px;overflow:hidden;border:1px solid var(--rule2)" role="progressbar" aria-label="'+t.l+'" aria-valuenow="'+Math.round(w)+'" aria-valuemin="0" aria-valuemax="100">'+
-        '<div style="height:100%;background:'+t.c+';width:'+w+'%;opacity:'+(t.you?1:0.65)+'"></div>'+
+      '<div style="background:var(--paper3);height:'+(t.you?14:8)+'px;overflow:hidden;border:2px solid var(--rule)" role="progressbar" aria-label="'+t.l+': '+fmt(t.v)+'" aria-valuenow="'+Math.round(w)+'" aria-valuemin="0" aria-valuemax="100">'+
+        '<div style="height:100%;background:'+t.c+';width:'+w+'%"></div>'+
       '</div></div>';
   }).join("");
   var narr="";
@@ -1102,7 +1195,7 @@ function runCalc(){
   var cohortNote=nw>co.med
     ?" Compared to your age cohort ("+ck+"), you are above the cohort median of "+fmt(co.med)+"."
     :" Compared to your age cohort ("+ck+"), you are below the cohort median of "+fmt(co.med)+" — but wealth accumulation tends to accelerate with age.";
-  var cn=document.getElementById("cnarr");if(cn)cn.innerHTML=narr+cohortNote;
+  var cn=document.getElementById("cnarr");if(cn)cn.textContent=narr+cohortNote;
 }
 
 /* ══════════ CHAMPAGNE GLASS ══════════ */
@@ -1287,7 +1380,7 @@ function buildChampagneGlass(){
       ctx.setLineDash([6*DPR,5*DPR]);ctx.stroke();ctx.setLineDash([]);
     }
 
-    // ── UPDATE OVERLAY LABELS ─────────────────
+    // ── UPDATE OVERLAY LABELS + ACCESSIBILITY ──
     var gn=document.getElementById("cg-big-name");
     var gp=document.getElementById("cg-big-pct");
     var sm=document.getElementById("cg-stat-main");
@@ -1296,6 +1389,17 @@ function buildChampagneGlass(){
     if(gp){gp.textContent=sd.wealth+" of wealth";gp.style.color=sd.color;}
     if(sm)sm.textContent=sd.stat;
     if(ss)ss.textContent=sd.sub;
+    // Update canvas aria-label so screen readers get current state
+    var wrap=document.getElementById("cg-canvas-wrap");
+    if(wrap){
+      wrap.setAttribute("aria-label","Champagne glass visualization: "+sd.group+" hold "+sd.wealth+" of U.S. wealth. "+sd.stat+".");
+    }
+    // Announce to screen readers only when the stage actually changes
+    if(sd.group!==draw._lastGroup){
+      draw._lastGroup=sd.group;
+      var live=document.getElementById("cg-live");
+      if(live)live.textContent=sd.group+": "+sd.wealth+" of wealth. "+sd.stat;
+    }
   }
   function onScroll(){
     var outer=document.getElementById("cg-outer");if(!outer)return;
