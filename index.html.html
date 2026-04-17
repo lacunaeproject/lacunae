@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lacunae — The Gaps in Power</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root{
+  /* dark mode (default) */
+  --bg:#07080f;--bg2:#0d0d1a;--bg3:#12121f;--border:#2a2a3e;
+  --text:#e8e4d9;--muted:#9090a8;--dim:#7070a0;
+  --nav-bg:#07080ff0;--card-bg:#0d0d1a;--input-bg:#12121f;
+  --gold:#d4b05a;--red:#f87171;--orange:#fb923c;
+  --yellow:#facc15;--green:#4ade80;--purple:#c4b5fd;
+  --focus:#d4b05a;
+  --fs-base:16px;--fs-sm:14px;--fs-xs:12px;--fs-lg:20px;
+  --radius:12px;--tap:44px;
+  --shadow:0 4px 20px #00000060;
+}
+html.light{
+  --bg:#f5f4f0;--bg2:#eeecea;--bg3:#e5e3de;--border:#d0cdc6;
+  --text:#1a1814;--muted:#5a5650;--dim:#7a7670;
+  --nav-bg:#f5f4f0f0;--card-bg:#eeecea;--input-bg:#e5e3de;
+  --gold:#9a7828;--red:#c0392b;--orange:#c0550a;
+  --yellow:#8a6800;--green:#1a7a3a;--purple:#5a3a9a;
+  --focus:#9a7828;
+  --shadow:0 4px 20px #00000018;
+}
+*{transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+/* don't transition transforms/outlines — causes jank */
+.dot,.bfill,.rbar,.bbar-fill,.bfill{transition:background-color .4s ease,transform .2s,width 1.2s cubic-bezier(.34,1.1,.64,1)!important}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:var(--fs-base)}
+body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);line-height:1.65;min-width:320px;-webkit-font-smoothing:antialiased}
+
+/* ── FOCUS ──────────────────────────────────────────────── */
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:4px}
+
+/* ── SKIP LINK ──────────────────────────────────────────── */
+.skip{position:absolute;top:-100px;left:16px;background:var(--gold);color:#07080f;padding:10px 16px;border-radius:var(--radius);font-family:monospace;font-size:var(--fs-sm);font-weight:700;z-index:9999;transition:top .2s}
+.skip:focus{top:8px}
+
+/* ── NAV ────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav-logo{font-size:var(--fs-sm);font-family:monospace;color:var(--gold);letter-spacing:.1em;font-weight:700;text-decoration:none}
+.nav-links{display:none;position:fixed;top:56px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);flex-direction:column;padding:16px;gap:4px;z-index:199}
+.nav-links.open{display:flex}
+.nav-link{padding:12px 14px;border-radius:8px;font-size:var(--fs-sm);font-family:monospace;color:var(--muted);text-decoration:none;min-height:var(--tap);display:flex;align-items:center;transition:all .2s}
+.nav-link:hover,.nav-link:focus{color:var(--text);background:var(--bg3)}
+.hamburger{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .2s}
+.hamburger:hover,.hamburger:focus{border-color:var(--gold);color:var(--gold)}
+.hamburger span{display:block;width:18px;height:2px;background:currentColor;border-radius:2px;transition:all .2s}
+.hamburger[aria-expanded=true] span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger[aria-expanded=true] span:nth-child(2){opacity:0}
+.hamburger[aria-expanded=true] span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+@media(min-width:640px){
+  .hamburger{display:none}
+  .nav-links{display:flex;position:static;flex-direction:row;padding:0;border:none;background:transparent;gap:2px}
+  .nav-link{min-height:auto;padding:8px 14px;font-size:var(--fs-sm)}
+}
+
+/* ── PROGRESS BAR ───────────────────────────────────────── */
+#pb{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--border);z-index:198}
+#pf{height:100%;background:var(--gold);width:0;transition:width .1s}
+
+/* ── TICKER ─────────────────────────────────────────────── */
+.ticker-wrap{overflow:hidden;border-bottom:1px solid var(--border);background:var(--bg2);padding:10px 0;margin-top:56px}
+.ticker-wrap:hover .ttrack,.ticker-wrap:focus-within .ttrack{animation-play-state:paused}
+.ttrack{display:flex;gap:56px;white-space:nowrap;animation:tick 40s linear infinite}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{font-size:var(--fs-sm);font-family:monospace;color:var(--muted);flex-shrink:0}
+.ti b{color:var(--green)}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+main{max-width:900px;margin:0 auto;padding:0 16px}
+section{padding:64px 0 48px}
+@media(min-width:640px){main{padding:0 24px}section{padding:80px 0 60px}}
+
+/* ── TYPE ───────────────────────────────────────────────── */
+.tag{font-size:var(--fs-sm);letter-spacing:.14em;color:var(--muted);font-family:monospace;margin-bottom:12px;text-transform:uppercase}
+h1{font-size:clamp(32px,8vw,68px);font-weight:400;line-height:1.05;letter-spacing:-.03em}
+h2{font-size:clamp(22px,5vw,42px);font-weight:400;line-height:1.1;letter-spacing:-.02em}
+h3{font-size:clamp(18px,3vw,22px);font-weight:400;margin-bottom:8px}
+.lead{font-size:clamp(16px,2.5vw,19px);color:var(--muted);line-height:1.75;max-width:580px;margin-top:16px}
+.explainer{font-size:var(--fs-base);color:var(--muted);line-height:1.7;margin-bottom:24px;padding:14px 18px;border-left:3px solid var(--border);background:var(--bg2);border-radius:0 8px 8px 0}
+hr.d{border:none;border-top:1px solid var(--border);margin:48px 0}
+
+/* ── STAT CARDS ─────────────────────────────────────────── */
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:28px}
+@media(min-width:480px){.cards{grid-template-columns:1fr 1fr}}
+@media(min-width:768px){.cards{grid-template-columns:repeat(4,1fr)}}
+.card{padding:24px 20px;border-radius:var(--radius);background:var(--card-bg);border:1px solid var(--border);position:relative;box-shadow:var(--shadow)}
+.card-lbl{font-size:var(--fs-sm);font-family:monospace;color:var(--muted);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase}
+.card-val{font-size:clamp(28px,5vw,38px);font-family:monospace;line-height:1;font-weight:400}
+.card-sub{font-size:var(--fs-base);color:var(--muted);margin-top:10px;line-height:1.6}
+.card-icon{font-size:20px;margin-bottom:8px}
+/* Source badge */
+.src-btn{display:inline-flex;align-items:center;gap:4px;margin-top:12px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:10px;font-family:monospace;cursor:pointer;transition:all .2s;min-height:28px}
+.src-btn:hover,.src-btn:focus{border-color:var(--gold);color:var(--gold)}
+.src-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:var(--fs-sm);font-family:monospace;color:var(--muted);line-height:1.6;z-index:50;box-shadow:0 8px 24px #00000080}
+.src-popup.open{display:block}
+.src-popup a{color:var(--gold);text-decoration:none}
+.src-popup a:hover{text-decoration:underline}
+
+/* ── WEALTH BARS ─────────────────────────────────────────── */
+.brow{margin-bottom:20px}
+.bmeta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:4px}
+.bname{font-size:var(--fs-base)}
+.bpct{font-size:clamp(18px,3vw,22px);font-family:monospace;font-weight:400}
+.btrack{background:var(--bg3);border-radius:5px;height:28px;overflow:hidden;position:relative}
+.bfill{height:100%;border-radius:5px;width:0;transition:width 1.2s cubic-bezier(.34,1.1,.64,1)}
+.bsub{font-size:var(--fs-sm);color:var(--muted);margin-top:5px;font-family:monospace}
+
+/* ── DOT GRID ────────────────────────────────────────────── */
+.dgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:24px 0}
+@media(min-width:600px){.dgrid{grid-template-columns:repeat(20,1fr);gap:4px}}
+.dot{aspect-ratio:1;border-radius:50%;background:var(--bg3);transition:background .4s,transform .2s;cursor:pointer;position:relative}
+.dot:hover,.dot:focus{transform:scale(1.5);z-index:2;outline:2px solid var(--focus)}
+.fbtns{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}
+.fbtn{padding:10px 16px;border-radius:20px;font-size:var(--fs-sm);font-family:monospace;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;min-height:var(--tap);display:flex;align-items:center}
+.fbtn:hover,.fbtn:focus{border-color:var(--gold);color:var(--gold)}
+.fbtn.on{background:var(--gold);color:#07080f;border-color:var(--gold);font-weight:700}
+.dinfo{min-height:56px;padding:14px 0;font-size:var(--fs-sm);color:var(--muted);line-height:1.7}
+/* Dot legend */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-family:monospace;color:var(--muted)}
+.leg-dot{width:12px;height:12px;border-radius:50%}
+
+/* ── VIS BOX ─────────────────────────────────────────────── */
+.vis{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-top:20px}
+
+/* ── RACE GRID ───────────────────────────────────────────── */
+.rgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:28px}
+@media(min-width:520px){.rgrid{grid-template-columns:1fr 1fr}}
+.rbar{height:100%;border-radius:3px;width:0;transition:width 1.2s ease}
+
+/* ── CALCULATOR ──────────────────────────────────────────── */
+.cwrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-top:28px}
+.crow{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.cfield{flex:1;min-width:140px}
+.cfield label{display:block;font-size:var(--fs-sm);font-family:monospace;color:var(--muted);letter-spacing:.06em;margin-bottom:8px;text-transform:uppercase}
+.cfield input{width:100%;padding:14px;background:var(--input-bg);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:var(--fs-lg);font-family:Georgia,serif;outline:none;transition:border-color .2s;min-height:var(--tap)}
+.cfield input:focus{border-color:var(--gold)}
+.cresults{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:480px){.cresults{grid-template-columns:1fr 1fr}}
+@media(min-width:768px){.cresults{grid-template-columns:repeat(4,1fr)}}
+.cr{padding:16px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.crl{font-size:var(--fs-sm);font-family:monospace;color:var(--muted);letter-spacing:.06em;margin-bottom:8px;text-transform:uppercase}
+.crv{font-size:clamp(20px,4vw,26px);font-family:monospace;line-height:1;color:var(--gold)}
+.crs{font-size:var(--fs-sm);color:var(--muted);margin-top:6px}
+
+/* ── BILLIONAIRE BARS ────────────────────────────────────── */
+.bbar-row{margin-bottom:14px;cursor:pointer;border-radius:8px;padding:8px;transition:background .2s;min-height:var(--tap)}
+.bbar-row:hover,.bbar-row:focus{background:var(--bg3);outline:none}
+.bbar-meta{display:flex;justify-content:space-between;margin-bottom:6px;align-items:center}
+.bbar-track{background:var(--bg3);border-radius:3px;height:16px;overflow:hidden}
+.bbar-fill{height:100%;border-radius:3px;width:0;transition:width 1s ease}
+
+/* ── SOURCES ACCORDION ───────────────────────────────────── */
+.sources-wrap{margin-top:40px;border-top:1px solid var(--border);padding-top:20px}
+.sources-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-size:var(--fs-sm);font-family:monospace;cursor:pointer;padding:12px 16px;min-height:var(--tap);transition:all .2s;letter-spacing:.04em}
+.sources-btn:hover,.sources-btn:focus{border-color:var(--gold);color:var(--gold)}
+.sources-btn .chevron{transition:transform .3s;font-size:14px}
+.sources-btn[aria-expanded=true] .chevron{transform:rotate(180deg)}
+.sources-body{display:none;padding:20px 0 4px}
+.sources-body.open{display:block}
+.src-link{display:block;padding:14px 16px;border-radius:9px;border:1px solid var(--border);margin-bottom:10px;text-decoration:none;transition:border-color .2s;background:var(--bg2)}
+.src-link:hover,.src-link:focus{border-color:var(--gold)}
+.src-link-title{font-size:var(--fs-base);color:var(--gold);font-family:monospace;margin-bottom:4px}
+.src-link-desc{font-size:var(--fs-sm);color:var(--muted);line-height:1.5}
+
+/* ── PULLQUOTE ───────────────────────────────────────────── */
+.pq{font-size:clamp(17px,3vw,24px);font-style:italic;line-height:1.5;border-left:3px solid var(--gold);padding-left:24px;margin:44px 0}
+.pqa{font-size:var(--fs-sm);color:var(--muted);margin-top:10px;font-style:normal}
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+footer{border-top:1px solid var(--border);padding:40px 16px;text-align:center;font-size:var(--fs-xs);font-family:monospace;color:var(--dim);line-height:1.9;max-width:900px;margin:0 auto}
+
+/* ── THEME TOGGLE ────────────────────────────────────────── */
+.theme-btn{background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;padding:6px 12px;font-size:var(--fs-xs);font-family:monospace;display:flex;align-items:center;gap:6px;min-height:32px;transition:all .2s;letter-spacing:.04em;white-space:nowrap}
+.theme-btn:hover,.theme-btn:focus{border-color:var(--gold);color:var(--gold)}
+.theme-icon{font-size:14px;line-height:1}
+
+/* ── LOGO ────────────────────────────────────────────────── */
+.logo-wrap{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-svg{flex-shrink:0}
+.logo-text{display:flex;flex-direction:column;line-height:1}
+.logo-name{font-size:15px;font-family:monospace;color:var(--text);font-weight:700;letter-spacing:.06em}
+.logo-tagline{font-size:10px;font-family:monospace;color:var(--muted);letter-spacing:.08em;margin-top:2px}
+
+/* ── NAV RIGHT GROUP ─────────────────────────────────────── */
+.nav-right{display:flex;align-items:center;gap:8px}
+
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main-content">Skip to main content</a>
+
+<nav role="navigation" aria-label="Main navigation">
+  <a class="logo-wrap" href="#" aria-label="Lacunae — return to top">
+    <svg class="logo-svg" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Outer ring -->
+      <circle cx="16" cy="16" r="14" stroke="var(--gold)" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Gap arc top — the lacuna -->
+      <path d="M 16 2 A 14 14 0 1 1 4.5 22" stroke="var(--gold)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Inner dot -->
+      <circle cx="16" cy="16" r="3" fill="var(--gold)"/>
+      <!-- Gap indicator lines -->
+      <line x1="16" y1="2" x2="16" y2="6" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <line x1="4.5" y1="22" x2="7.5" y2="20" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+    </svg>
+    <div class="logo-text">
+      <span class="logo-name">LACUNAE</span>
+      <span class="logo-tagline">THE GAPS IN POWER</span>
+    </div>
+  </a>
+  <div class="nav-right">
+    <div class="nav-links" id="nav-links" role="list">
+      <a class="nav-link" href="#s1" role="listitem">Overview</a>
+      <a class="nav-link" href="#s2" role="listitem">Distribution</a>
+      <a class="nav-link" href="#s3" role="listitem">Billionaires</a>
+      <a class="nav-link" href="#s4" role="listitem">Race</a>
+      <a class="nav-link" href="#s5" role="listitem">Calculator</a>
+    </div>
+    <button class="theme-btn" id="theme-toggle" aria-label="Switch to light mode" onclick="toggleTheme()">
+      <span class="theme-icon" aria-hidden="true">☀</span>
+      <span id="theme-label">Light</span>
+    </button>
+    <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div id="pb" role="progressbar" aria-label="Reading progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div id="pf"></div></div>
+
+<div class="ticker-wrap" aria-label="Key statistics ticker" aria-live="off">
+  <div class="ttrack" id="ticker" aria-hidden="true"></div>
+</div>
+
+<main id="main-content">
+
+<!-- ── OVERVIEW ─────────────────────────────────────────── -->
+<section id="s1" aria-labelledby="s1-heading">
+  <div class="tag" aria-hidden="true">Lacunae · U.S. Wealth Inequality · 2026</div>
+  <h1 id="s1-heading">The gap has never<br>been <span style="color:var(--red)" aria-label="wider">wider.</span></h1>
+  <p class="lead">In Q3 2025, the top 1% owned <strong style="color:var(--red)">31.7%</strong> of all U.S. wealth — a record high since the Federal Reserve began tracking in 1989. The bottom 50% hold just <strong>2.5%</strong>.</p>
+
+  <div class="cards" role="list" aria-label="Key wealth statistics">
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">📈</div>
+      <div class="card-lbl">Top 1% wealth share</div>
+      <div class="card-val" style="color:var(--red)" aria-label="31.7 percent">31.7%</div>
+      <div class="card-sub">Record high as of Q3 2025 — highest since Fed tracking began in 1989</div>
+      <button class="src-btn" aria-expanded="false" aria-label="Show source for top 1% wealth share stat" onclick="toggleSrc(this)">📎 Source ▾</button>
+      <div class="src-popup" role="tooltip">Federal Reserve Distributional Financial Accounts, Q3 2025.<br><a href="https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/chart/" target="_blank" rel="noopener">federalreserve.gov →</a></div>
+    </div>
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">👥</div>
+      <div class="card-lbl">Bottom 50% wealth share</div>
+      <div class="card-val" style="color:var(--muted)" aria-label="2.5 percent">2.5%</div>
+      <div class="card-sub">165 million households combined — roughly equal to one upper-middle-class household</div>
+      <button class="src-btn" aria-expanded="false" aria-label="Show source for bottom 50% stat" onclick="toggleSrc(this)">📎 Source ▾</button>
+      <div class="src-popup" role="tooltip">Federal Reserve DFA, Q2 2024. CBS News analysis, January 2026.<br><a href="https://www.cbsnews.com/news/us-wealth-gap-widest-in-three-decades-federal-reserve/" target="_blank" rel="noopener">cbsnews.com →</a></div>
+    </div>
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">🏦</div>
+      <div class="card-lbl">905 U.S. billionaires hold</div>
+      <div class="card-val" style="color:var(--yellow)" aria-label="7.8 trillion dollars">$7.8T</div>
+      <div class="card-sub">More combined wealth than the bottom half of all Americans</div>
+      <button class="src-btn" aria-expanded="false" aria-label="Show source for billionaire wealth stat" onclick="toggleSrc(this)">📎 Source ▾</button>
+      <div class="src-popup" role="tooltip">Forbes Real-Time Billionaires List, September 29, 2025. Institute for Policy Studies analysis.<br><a href="https://inequality.org/article/billionaire-wealth-concentration-is-even-worse-than-you-imagine/" target="_blank" rel="noopener">inequality.org →</a></div>
+    </div>
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">🚀</div>
+      <div class="card-lbl">Elon Musk net worth</div>
+      <div class="card-val" style="color:var(--green)" aria-label="809 billion dollars">$809B</div>
+      <div class="card-sub">Forbes estimate, early 2026 — first person to exceed $600B, $700B, $800B</div>
+      <button class="src-btn" aria-expanded="false" aria-label="Show source for Elon Musk net worth stat" onclick="toggleSrc(this)">📎 Source ▾</button>
+      <div class="src-popup" role="tooltip">Forbes Billionaires, 2026. Bloomberg Billionaires Index.<br><a href="https://en.wikipedia.org/wiki/Wealth_of_Elon_Musk" target="_blank" rel="noopener">Wikipedia: Wealth of Elon Musk →</a></div>
+    </div>
+  </div>
+
+  <div class="pq">"Household wealth is highly concentrated and becoming steadily more concentrated."<div class="pqa">— Mark Zandi, Chief Economist, Moody's Analytics · January 2026</div></div>
+
+  <div class="sources-wrap">
+    <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">
+      Sources &amp; further reading <span class="chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="sources-body" role="region">
+      <a class="src-link" href="https://www.cbsnews.com/news/us-wealth-gap-widest-in-three-decades-federal-reserve/" target="_blank" rel="noopener">
+        <div class="src-link-title">CBS News — Wealth inequality hits widest gap in 3 decades (Jan 2026)</div>
+        <div class="src-link-desc">Reports on Federal Reserve Q3 2025 data showing the top 1% at a record 31.7% share.</div>
+      </a>
+      <a class="src-link" href="https://www.cnbc.com/2026/01/30/wealth-inequality-k-shaped-economy-united-states-consumer-spending-trump.html" target="_blank" rel="noopener">
+        <div class="src-link-title">CNBC — K-Shaped Economy Statistics (Jan 2026)</div>
+        <div class="src-link-desc">Analysis of the growing divergence between upper and lower income households.</div>
+      </a>
+      <a class="src-link" href="https://inequality.org/facts/wealth-inequality/" target="_blank" rel="noopener">
+        <div class="src-link-title">Inequality.org — Wealth Inequality Facts</div>
+        <div class="src-link-desc">Comprehensive overview of U.S. wealth concentration with ongoing updates.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="d">
+
+<!-- ── DISTRIBUTION ──────────────────────────────────────── -->
+<section id="s2" aria-labelledby="s2-heading">
+  <div class="tag" aria-hidden="true">The Distribution</div>
+  <h2 id="s2-heading">Who owns what</h2>
+  <p class="lead">The U.S. has 4 wealth groups. Their sizes tell one story. Their wealth shares tell another.</p>
+
+  <div class="explainer">Think of all American wealth as 100 pizza slices. The chart below shows how many slices each group gets. The bottom half of the country shares fewer than 3 slices between 165 million households.</div>
+
+  <div id="wbars" role="list" aria-label="Wealth distribution by group"></div>
+
+  <hr class="d">
+
+  <h3>100 Americans</h3>
+  <div class="explainer">Each dot below represents 1% of the U.S. population. The dots are colored by wealth group. Click any button to highlight that group and see their share of national wealth.</div>
+
+  <div class="legend" role="list" aria-label="Dot color legend">
+    <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#f87171" aria-hidden="true"></div>Bottom 50%</div>
+    <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#fb923c" aria-hidden="true"></div>Middle 40%</div>
+    <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#facc15" aria-hidden="true"></div>Next 9%</div>
+    <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#4ade80" aria-hidden="true"></div>Top 1%</div>
+    <div class="leg-item" role="listitem"><div class="leg-dot" style="background:#d4b05a" aria-hidden="true"></div>You (#72)</div>
+  </div>
+
+  <div class="fbtns" role="group" aria-label="Filter dot grid by wealth group">
+    <button class="fbtn on" onclick="filterDots('all',this)" aria-pressed="true">All groups</button>
+    <button class="fbtn" onclick="filterDots('b50',this)" aria-pressed="false">Bottom 50% — 2.5% of wealth</button>
+    <button class="fbtn" onclick="filterDots('m40',this)" aria-pressed="false">Middle 40% — 26.5%</button>
+    <button class="fbtn" onclick="filterDots('n9',this)" aria-pressed="false">Next 9% — 39.3%</button>
+    <button class="fbtn" onclick="filterDots('t1',this)" aria-pressed="false">Top 1% — 31.7%</button>
+    <button class="fbtn" onclick="filterDots('you',this)" aria-pressed="false">You (dot #72)</button>
+  </div>
+
+  <div class="dgrid" id="dgrid" role="grid" aria-label="100 Americans dot visualization"></div>
+  <div class="dinfo" id="dinfo" role="status" aria-live="polite">Each dot is 1% of the U.S. population. Color shows their wealth group.</div>
+
+  <hr class="d">
+
+  <h3>Top 1% share since 1989</h3>
+  <div class="explainer">The share of wealth owned by the richest 1% has climbed from 23.8% in 1989 to a record 31.7% in 2025 — growing during every market boom and recovering quickly after every dip.</div>
+  <div id="tl" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 16px 32px;min-height:150px" role="img" aria-label="Line chart showing top 1% wealth share rising from 23.8% in 1989 to 31.7% in 2025"></div>
+  <div style="font-size:10px;color:var(--dim);font-family:monospace;margin-top:6px;text-align:right">SOURCE: FEDERAL RESERVE DFA 1989–2025</div>
+
+  <div class="sources-wrap">
+    <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron" aria-hidden="true">▾</span></button>
+    <div class="sources-body" role="region">
+      <a class="src-link" href="https://www.federalreserve.gov/releases/z1/dataviz/dfa/distribute/chart/" target="_blank" rel="noopener">
+        <div class="src-link-title">Federal Reserve — Distributional Financial Accounts Interactive Chart</div>
+        <div class="src-link-desc">The primary source for all wealth distribution data, updated quarterly.</div>
+      </a>
+      <a class="src-link" href="https://apps.urban.org/features/wealth-inequality-charts/" target="_blank" rel="noopener">
+        <div class="src-link-title">Urban Institute — Nine Charts on Wealth Inequality</div>
+        <div class="src-link-desc">Clear visualizations of how wealth gaps have changed over time across race and income.</div>
+      </a>
+      <a class="src-link" href="https://inequality.org/facts/wealth-inequality/" target="_blank" rel="noopener">
+        <div class="src-link-title">Inequality.org — Running tally of U.S. wealth concentration</div>
+        <div class="src-link-desc">Tracks billionaire wealth and bottom 50% share using Fed and Forbes data in real time.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="d">
+
+<!-- ── BILLIONAIRES ──────────────────────────────────────── -->
+<section id="s3" aria-labelledby="s3-heading">
+  <div class="tag" aria-hidden="true">The Billionaire Class</div>
+  <h2 id="s3-heading">905 people.<br><span style="color:var(--yellow)">$7.8 trillion.</span></h2>
+  <p class="lead">As of September 2025, 905 U.S. billionaires hold more combined wealth than the bottom half of all Americans. Their collective wealth grew more than 4× since March 2020.</p>
+
+  <div class="cards" role="list" aria-label="Billionaire class key facts">
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">📅</div>
+      <div class="card-lbl">Billionaires in 1989</div>
+      <div class="card-val" style="color:var(--muted)">66</div>
+      <div class="card-sub">Combined wealth approximately $200 billion</div>
+    </div>
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">📅</div>
+      <div class="card-lbl">Billionaires in 2025</div>
+      <div class="card-val" style="color:var(--yellow)">905</div>
+      <div class="card-sub">Combined wealth $7.8 trillion — a 39× increase from 1989</div>
+    </div>
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">🦠</div>
+      <div class="card-lbl">Pandemic wealth gain</div>
+      <div class="card-val" style="color:var(--green)">+70%</div>
+      <div class="card-sub">Billionaire wealth grew 70% between March 2020 and October 2021</div>
+    </div>
+    <div class="card" role="listitem">
+      <div class="card-icon" aria-hidden="true">👑</div>
+      <div class="card-lbl">Top 12 hold</div>
+      <div class="card-val" style="color:var(--red)">$2.7T</div>
+      <div class="card-sub">As of January 1, 2026 — more than quadrupled from 2020</div>
+      <button class="src-btn" aria-expanded="false" aria-label="Show source for top 12 billionaires stat" onclick="toggleSrc(this)">📎 Source ▾</button>
+      <div class="src-popup" role="tooltip">Institute for Policy Studies analysis of Forbes Real Time Billionaire Data, January 2026.<br><a href="https://inequality.org/article/billionaire-wealth-concentration-is-even-worse-than-you-imagine/" target="_blank" rel="noopener">inequality.org →</a></div>
+    </div>
+  </div>
+
+  <div class="vis" aria-label="Top U.S. billionaires by net worth — click to compare">
+    <div style="font-size:var(--fs-xs);color:var(--dim);font-family:monospace;letter-spacing:.12em;margin-bottom:20px;text-transform:uppercase">Top U.S. billionaires · Early 2026 · Click or tap to compare</div>
+    <div id="bbars" role="list" aria-label="Billionaire wealth bars"></div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:var(--fs-sm);color:var(--muted);line-height:1.7" id="bctx" role="status" aria-live="polite">
+      Tap any name above to see how their wealth compares to everyday benchmarks.
+    </div>
+  </div>
+
+  <div class="pq">The top 10 richest ended 2025 worth <span style="color:var(--yellow);font-style:normal">$2.55 trillion</span> — more than Meta and Walmart combined.<div class="pqa">— Benzinga analysis, January 2026</div></div>
+
+  <div class="sources-wrap">
+    <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron" aria-hidden="true">▾</span></button>
+    <div class="sources-body" role="region">
+      <a class="src-link" href="https://inequality.org/article/billionaire-wealth-concentration-is-even-worse-than-you-imagine/" target="_blank" rel="noopener">
+        <div class="src-link-title">Inequality.org — Billionaire Wealth Concentration Is Even Worse Than You Imagine</div>
+        <div class="src-link-desc">Tracks the 905 U.S. billionaires using Fed data and Forbes real-time list.</div>
+      </a>
+      <a class="src-link" href="https://finance.yahoo.com/news/elon-musk-larry-ellison-lead-190058412.html" target="_blank" rel="noopener">
+        <div class="src-link-title">Benzinga / Yahoo Finance — Top 10 richest 2025 gains</div>
+        <div class="src-link-desc">The top 10 billionaires gained $578B in 2025 — more than Netflix and AT&T combined.</div>
+      </a>
+      <a class="src-link" href="https://en.wikipedia.org/wiki/Wealth_of_Elon_Musk" target="_blank" rel="noopener">
+        <div class="src-link-title">Wikipedia — Wealth of Elon Musk</div>
+        <div class="src-link-desc">Documented timeline of Musk's wealth milestones including first to $800B (Feb 2026).</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="d">
+
+<!-- ── RACE ──────────────────────────────────────────────── -->
+<section id="s4" aria-labelledby="s4-heading">
+  <div class="tag" aria-hidden="true">The Racial Wealth Gap</div>
+  <h2 id="s4-heading">Same country.<br><span style="color:var(--orange)">Very different starting lines.</span></h2>
+  <p class="lead">Wealth inequality in America runs along racial lines that have persisted for generations — the direct result of policy, not personal choices.</p>
+
+  <div class="explainer">Each card below shows a racial group's share of households versus their share of total national wealth. Where those two numbers are far apart, the system is not neutral.</div>
+
+  <div class="rgrid" id="s4">
+    <div class="card">
+      <div class="card-icon" aria-hidden="true">◻</div>
+      <div class="card-lbl">White households</div>
+      <div style="font-size:var(--fs-lg);margin-bottom:14px;color:var(--text)">66% of households</div>
+      <div style="font-size:var(--fs-xs);color:var(--dim);font-family:monospace;margin-bottom:6px;text-transform:uppercase">Share of total wealth</div>
+      <div style="background:var(--bg3);border-radius:3px;height:20px;overflow:hidden" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100" aria-label="White households: 84.2% of wealth">
+        <div class="rbar" data-w="84.2" style="background:#e8e4d966"></div>
+      </div>
+      <div style="font-size:clamp(20px,4vw,28px);color:#e8e4d9;font-family:monospace;margin-top:8px" aria-label="84.2 percent">84.2%</div>
+      <div class="card-sub">Median net worth: $282,310</div>
+      <div class="csrc" style="font-size:10px;color:var(--dim);font-family:monospace;margin-top:8px">FED DFA Q4 2023</div>
+    </div>
+    <div class="card">
+      <div class="card-icon" aria-hidden="true">◼</div>
+      <div class="card-lbl" style="color:var(--green)">Black households</div>
+      <div style="font-size:var(--fs-lg);margin-bottom:14px;color:var(--text)">11.4% of households</div>
+      <div style="font-size:var(--fs-xs);color:var(--dim);font-family:monospace;margin-bottom:6px;text-transform:uppercase">Share of total wealth</div>
+      <div style="background:var(--bg3);border-radius:3px;height:20px;overflow:hidden" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100" aria-label="Black households: 3.4% of wealth">
+        <div class="rbar" data-w="3.4" style="background:var(--green);transition-delay:.1s"></div>
+      </div>
+      <div style="font-size:clamp(20px,4vw,28px);color:var(--green);font-family:monospace;margin-top:8px" aria-label="3.4 percent">3.4%</div>
+      <div class="card-sub">Median net worth: $44,100</div>
+      <div class="csrc" style="font-size:10px;color:var(--dim);font-family:monospace;margin-top:8px">FED SCF 2022</div>
+    </div>
+    <div class="card">
+      <div class="card-icon" aria-hidden="true">◈</div>
+      <div class="card-lbl" style="color:var(--orange)">Hispanic households</div>
+      <div style="font-size:var(--fs-lg);margin-bottom:14px;color:var(--text)">9.6% of households</div>
+      <div style="font-size:var(--fs-xs);color:var(--dim);font-family:monospace;margin-bottom:6px;text-transform:uppercase">Share of total wealth</div>
+      <div style="background:var(--bg3);border-radius:3px;height:20px;overflow:hidden" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" aria-label="Hispanic households: 2.3% of wealth">
+        <div class="rbar" data-w="2.3" style="background:var(--orange);transition-delay:.2s"></div>
+      </div>
+      <div style="font-size:clamp(20px,4vw,28px);color:var(--orange);font-family:monospace;margin-top:8px" aria-label="2.3 percent">2.3%</div>
+      <div class="card-sub">Median net worth: ~$48,000</div>
+      <div class="csrc" style="font-size:10px;color:var(--dim);font-family:monospace;margin-top:8px">FED DFA 2023</div>
+    </div>
+    <div class="card">
+      <div class="card-icon" aria-hidden="true">⇔</div>
+      <div class="card-lbl">The gap in plain terms</div>
+      <div style="font-size:var(--fs-base);color:var(--muted);line-height:1.8;margin-top:8px">
+        The median white family has <span style="color:var(--text);font-weight:bold">6.4×</span> the wealth of the median Black family.
+        In absolute dollars, this gap has <em>widened</em> since 1983 — from ~$320K to over <strong style="color:var(--orange)">$1 million</strong>.
+        The gap is the result of structural racism in housing, banking, and inheritance policy — not individual choices.
+      </div>
+    </div>
+  </div>
+
+  <div class="sources-wrap">
+    <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron" aria-hidden="true">▾</span></button>
+    <div class="sources-body" role="region">
+      <a class="src-link" href="https://apps.urban.org/features/wealth-inequality-charts/" target="_blank" rel="noopener">
+        <div class="src-link-title">Urban Institute — Nine Charts about Wealth Inequality in America</div>
+        <div class="src-link-desc">Shows how the racial wealth gap has grown in absolute terms even as the ratio narrowed slightly.</div>
+      </a>
+      <a class="src-link" href="https://inequality.org/facts/wealth-inequality/" target="_blank" rel="noopener">
+        <div class="src-link-title">Inequality.org — Racial Wealth Data</div>
+        <div class="src-link-desc">White households hold 84.2% of all wealth while comprising 66% of households (Fed DFA Q4 2023).</div>
+      </a>
+      <a class="src-link" href="https://www.federalreserve.gov/econres/scfindex.htm" target="_blank" rel="noopener">
+        <div class="src-link-title">Federal Reserve — Survey of Consumer Finances</div>
+        <div class="src-link-desc">The primary triennial survey of U.S. household wealth including race breakdowns.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="d">
+
+<!-- ── CALCULATOR ─────────────────────────────────────────── -->
+<section id="s5" aria-labelledby="s5-heading">
+  <div class="tag" aria-hidden="true">Personal Calculator</div>
+  <h2 id="s5-heading">Where do <em>you</em> sit?</h2>
+  <p class="lead">Enter your net worth and age to see your exact position in the U.S. wealth distribution — overall and against your own age cohort.</p>
+
+  <div class="explainer">This calculator uses Federal Reserve Survey of Consumer Finances data (2022/2023). Net worth = total assets minus total debts. Include your home equity, retirement accounts, and savings, then subtract your mortgage, student loans, and other debts.</div>
+
+  <div class="cwrap">
+    <div class="crow">
+      <div class="cfield">
+        <label for="inNW">Your net worth ($)</label>
+        <input type="number" id="inNW" value="600000" oninput="runCalc()" aria-describedby="nw-hint" min="-999999999" max="999999999">
+        <div id="nw-hint" style="font-size:var(--fs-xs);color:var(--dim);margin-top:6px;font-family:monospace">Assets minus debts. Can be negative.</div>
+      </div>
+      <div class="cfield">
+        <label for="inAge">Your age</label>
+        <input type="number" id="inAge" value="33" oninput="runCalc()" aria-describedby="age-hint" min="18" max="99">
+        <div id="age-hint" style="font-size:var(--fs-xs);color:var(--dim);margin-top:6px;font-family:monospace">Used to compare against your age cohort.</div>
+      </div>
+    </div>
+    <div class="cresults" id="cresults" aria-live="polite" aria-label="Calculator results"></div>
+    <div style="margin-top:24px">
+      <div style="font-size:var(--fs-xs);color:var(--dim);font-family:monospace;letter-spacing:.12em;margin-bottom:14px;text-transform:uppercase">Your wealth vs. key thresholds (log scale)</div>
+      <div id="cbars" aria-label="Comparison bars" role="img"></div>
+    </div>
+    <div id="cnarr" style="margin-top:20px;padding:18px;background:var(--bg);border-radius:10px;border:1px solid var(--border);font-size:var(--fs-base);color:var(--muted);line-height:1.8" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="sources-wrap">
+    <button class="sources-btn" aria-expanded="false" onclick="toggleSources(this)">Sources &amp; further reading <span class="chevron" aria-hidden="true">▾</span></button>
+    <div class="sources-body" role="region">
+      <a class="src-link" href="https://www.federalreserve.gov/econres/scfindex.htm" target="_blank" rel="noopener">
+        <div class="src-link-title">Federal Reserve — Survey of Consumer Finances (SCF)</div>
+        <div class="src-link-desc">The source for all percentile thresholds used in this calculator. Updated every 3 years; latest is 2022/2023.</div>
+      </a>
+      <a class="src-link" href="https://dqydj.com/net-worth-percentiles/" target="_blank" rel="noopener">
+        <div class="src-link-title">DQYDJ — U.S. Net Worth Percentile Calculator</div>
+        <div class="src-link-desc">Interactive tool using the same Fed SCF data. Look up your exact percentile with a specific number.</div>
+      </a>
+      <a class="src-link" href="https://dqydj.com/net-worth-percentiles-by-age/" target="_blank" rel="noopener">
+        <div class="src-link-title">DQYDJ — Net Worth Percentiles by Age (2023)</div>
+        <div class="src-link-desc">Every percentile broken out by age cohort — the source for all age-cohort comparisons in this calculator.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px">
+    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="16" cy="16" r="14" stroke="var(--gold)" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M 16 2 A 14 14 0 1 1 4.5 22" stroke="var(--gold)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="16" cy="16" r="3" fill="var(--gold)"/>
+    </svg>
+    <span style="color:var(--gold);font-size:14px;font-family:monospace;font-weight:700;letter-spacing:.06em">LACUNAE</span>
+  </div>
+  <div style="color:var(--muted);font-size:var(--fs-xs);margin-bottom:14px">The gaps in power · lacunae.us</div>
+  Sources: Federal Reserve DFA Q3 2025 · Fed SCF 2022/2023 · Forbes Billionaires Sept 2025 / Jan 2026 ·
+  Institute for Policy Studies · Moody's Analytics · DQYDJ · Urban Institute ·
+  CBS News / CNBC Jan 2026 · Inequality.org<br><br>
+  All figures in nominal USD. Percentile calculations based on Fed SCF 2022/2023.
+  This site is for educational purposes only.
+</footer>
+
+<script>
+/* ── DATA ─────────────────────────────────────────────────── */
+var WG=[
+  {n:"Bottom 50%",sub:"165 million households",sh:2.5,c:"#f87171",icon:"▓"},
+  {n:"50th–90th percentile",sub:"Upper middle class",sh:26.5,c:"#fb923c",icon:"▒"},
+  {n:"90th–99th percentile",sub:"Upper class",sh:39.3,c:"#facc15",icon:"░"},
+  {n:"Top 1%",sub:"~1.3 million households",sh:31.7,c:"#4ade80",icon:"█"},
+];
+var TL=[
+  {y:"1989",p:23.8},{y:"1992",p:25.2},{y:"1995",p:25.9},{y:"1998",p:29.8},
+  {y:"2001",p:29.5},{y:"2004",p:28.9},{y:"2007",p:29.6},{y:"2010",p:27.6},
+  {y:"2013",p:29.0},{y:"2016",p:29.4},{y:"2019",p:30.5},{y:"2020",p:27.5},
+  {y:"2021",p:28.9},{y:"2022",p:30.5},{y:"2025",p:31.7},
+];
+var BB=[
+  {n:"Elon Musk",w:809,c:"#4ade80"},
+  {n:"Mark Zuckerberg",w:216,c:"#60a5fa"},
+  {n:"Larry Ellison",w:210,c:"#6ee7b7"},
+  {n:"Jeff Bezos",w:195,c:"#fb923c"},
+  {n:"Larry Page",w:160,c:"#818cf8"},
+  {n:"Sergey Brin",w:155,c:"#c4b5fd"},
+  {n:"Warren Buffett",w:145,c:"#fbbf24"},
+  {n:"Jensen Huang",w:130,c:"#34d399"},
+];
+var PERCS=[
+  {p:10,v:440},{p:20,v:13528},{p:25,v:28000},{p:30,v:46700},
+  {p:40,v:93300},{p:50,v:192084},{p:60,v:319600},{p:70,v:506400},
+  {p:75,v:648000},{p:80,v:849900},{p:90,v:1900000},{p:95,v:3500000},
+  {p:99,v:13666778},{p:99.9,v:61827166},
+];
+var COHORTS={
+  "18-24":{p25:88,med:10222,p75:33898,p90:184516,top1:653224},
+  "25-29":{p25:3784,med:31470,p75:130606,p90:296830,top1:2121910},
+  "30-34":{p25:11016,med:88631,p75:186140,p90:538750,top1:2636882},
+  "35-39":{p25:16548,med:138588,p75:389432,p90:864340,top1:4741320},
+  "40-44":{p25:23812,med:134382,p75:436892,p90:1182580,top1:7835420},
+  "45-49":{p25:47668,med:213586,p75:680298,p90:1428714,top1:8701500},
+  "50-54":{p25:54414,med:266140,p75:913012,p90:2576540,top1:13231940},
+  "55-59":{p25:84977,med:321074,p75:1137318,p90:2672160,top1:15371684},
+  "60-64":{p25:80372,med:392860,p75:1131122,p90:3042280,top1:17869960},
+};
+var DC={b50:"#f87171",m40:"#fb923c",n9:"#facc15",t1:"#4ade80"};
+var DD={b50:"#2a1515",m40:"#2a1a0a",n9:"#2a2200",t1:"#0a2010"};
+var DI={
+  all:"Each dot is 1% of the U.S. population. Use the buttons to highlight a wealth group.",
+  b50:"Bottom 50% highlighted (red). These 50 dots — 165 million households — share just 2.5% of all U.S. wealth. That is nearly invisible on a chart.",
+  m40:"Middle 40% highlighted (orange). These 40 dots hold 26.5% of wealth. This is the so-called middle class — homeowners, 401(k) holders, professionals.",
+  n9:"Next 9% highlighted (yellow). Just 9 dots, but they hold 39.3% of all wealth — more than the entire bottom 90% combined.",
+  t1:"Top 1% highlighted (green). Just 1 dot. One person out of 100. They hold 31.7% of all wealth — a record high as of Q3 2025.",
+  you:"You are dot #72 (gold). At $600K net worth you are around the 72nd percentile overall, and roughly the 92nd percentile for the 30-34 age cohort. You have about 3 times the median American's wealth, but the top 1% has 22 times yours.",
+};
+
+/* ── HELPERS ─────────────────────────────────────────────── */
+function fmt(n){
+  if(Math.abs(n)>=1e12)return"$"+(n/1e12).toFixed(1)+"T";
+  if(Math.abs(n)>=1e9)return"$"+(n/1e9).toFixed(1)+"B";
+  if(Math.abs(n)>=1e6)return"$"+(n/1e6).toFixed(2).replace(/\.?0+$/,"")+"M";
+  if(Math.abs(n)>=1e3)return"$"+Math.round(n/1000)+"K";
+  return"$"+Math.round(n);
+}
+function fmtN(n){return Math.round(n).toLocaleString()}
+function getDG(i){return i<50?"b50":i<90?"m40":i<99?"n9":"t1"}
+function getCohort(a){
+  if(a<25)return"18-24";if(a<30)return"25-29";if(a<35)return"30-34";
+  if(a<40)return"35-39";if(a<45)return"40-44";if(a<50)return"45-49";
+  if(a<55)return"50-54";if(a<60)return"55-59";return"60-64";
+}
+function estPerc(nw){
+  if(nw<=0)return 5;
+  for(var i=0;i<PERCS.length-1;i++){
+    if(nw>=PERCS[i].v&&nw<PERCS[i+1].v){
+      var r=PERCS[i+1].v-PERCS[i].v,pos=nw-PERCS[i].v;
+      return PERCS[i].p+(pos/r)*(PERCS[i+1].p-PERCS[i].p);
+    }
+  }
+  return 99.5;
+}
+
+/* ── HAMBURGER ───────────────────────────────────────────── */
+document.getElementById("hamburger").addEventListener("click",function(){
+  var expanded=this.getAttribute("aria-expanded")==="true";
+  this.setAttribute("aria-expanded",String(!expanded));
+  var links=document.getElementById("nav-links");
+  if(expanded)links.classList.remove("open");else links.classList.add("open");
+});
+document.querySelectorAll(".nav-link").forEach(function(l){
+  l.addEventListener("click",function(){
+    document.getElementById("nav-links").classList.remove("open");
+    document.getElementById("hamburger").setAttribute("aria-expanded","false");
+  });
+});
+
+/* ── SOURCE POPUPS ───────────────────────────────────────── */
+function toggleSrc(btn){
+  var popup=btn.nextElementSibling;
+  var open=popup.classList.contains("open");
+  // close all
+  document.querySelectorAll(".src-popup.open").forEach(function(p){p.classList.remove("open")});
+  document.querySelectorAll(".src-btn").forEach(function(b){b.setAttribute("aria-expanded","false");b.textContent=b.textContent.replace("▴","▾")});
+  if(!open){
+    popup.classList.add("open");
+    btn.setAttribute("aria-expanded","true");
+  }
+}
+document.addEventListener("click",function(e){
+  if(!e.target.classList.contains("src-btn")){
+    document.querySelectorAll(".src-popup.open").forEach(function(p){p.classList.remove("open")});
+    document.querySelectorAll(".src-btn").forEach(function(b){b.setAttribute("aria-expanded","false")});
+  }
+});
+
+/* ── SOURCES ACCORDION ───────────────────────────────────── */
+function toggleSources(btn){
+  var expanded=btn.getAttribute("aria-expanded")==="true";
+  btn.setAttribute("aria-expanded",String(!expanded));
+  var body=btn.nextElementSibling;
+  if(expanded)body.classList.remove("open");else body.classList.add("open");
+}
+
+/* ── TICKER ─────────────────────────────────────────────── */
+function buildTicker(){
+  var items=[
+    ["Top 1% wealth share (Q3 2025)","31.7% — record high"],
+    ["Elon Musk net worth","$809B (Forbes 2026)"],
+    ["905 U.S. billionaires","$7.8 trillion combined"],
+    ["Bottom 50% wealth share","2.5% of all wealth"],
+    ["Median household net worth","$192,084"],
+    ["Top 1% threshold","$13.7M+"],
+    ["Billionaires 1989 to 2025","66 to 905"],
+    ["White / Black wealth gap","6.4x median difference"],
+    ["Pandemic billionaire gain","+70% (2020-2021)"],
+    ["Top 10% consumer spending","~50% of all U.S. spending"],
+  ];
+  var t=document.getElementById("ticker");
+  if(!t)return;
+  var all=items.concat(items);
+  all.forEach(function(item){
+    var el=document.createElement("div");
+    el.className="ti";
+    el.innerHTML=item[0]+" <b>"+item[1]+"</b>";
+    t.appendChild(el);
+  });
+}
+
+/* ── WEALTH BARS ─────────────────────────────────────────── */
+function buildWBars(){
+  var el=document.getElementById("wbars");
+  if(!el)return;
+  WG.forEach(function(g,i){
+    var d=document.createElement("div");
+    d.className="brow";
+    d.setAttribute("role","listitem");
+    d.innerHTML=
+      '<div class="bmeta">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<span style="font-size:18px;color:'+g.c+'" aria-hidden="true">'+g.icon+'</span>'+
+          '<span class="bname">'+g.n+'</span>'+
+          '<span style="font-size:var(--fs-xs);color:var(--dim);font-family:monospace">('+g.sub+')</span>'+
+        '</div>'+
+        '<span class="bpct" style="color:'+g.c+'" aria-label="'+g.sh+' percent of U.S. wealth">'+g.sh+'%</span>'+
+      '</div>'+
+      '<div class="btrack" role="progressbar" aria-valuenow="'+g.sh+'" aria-valuemin="0" aria-valuemax="100" aria-label="'+g.n+': '+g.sh+'% of national wealth">'+
+        '<div class="bfill" data-w="'+g.sh+'" style="background:'+g.c+';opacity:.9;transition-delay:'+(i*0.12)+'s"></div>'+
+      '</div>'+
+      (g.sh<=3?'<div class="bsub" role="note">⚠ Warning: '+g.sub+' share just '+g.sh+'% of all national wealth — nearly invisible on this chart.</div>':'');
+    el.appendChild(d);
+  });
+}
+
+/* ── DOT GRID ────────────────────────────────────────────── */
+var groupLabels={b50:"Bottom 50%",m40:"Middle 40%",n9:"Next 9%",t1:"Top 1%"};
+function buildDots(){
+  var g=document.getElementById("dgrid");
+  if(!g)return;
+  for(var i=0;i<100;i++){
+    var grp=getDG(i);
+    var d=document.createElement("div");
+    d.className="dot";
+    d.setAttribute("role","gridcell");
+    d.setAttribute("tabindex","0");
+    d.setAttribute("data-i",i);
+    d.setAttribute("data-g",grp);
+    d.setAttribute("aria-label","Person "+(i+1)+" of 100 - "+groupLabels[grp]+(i===71?" - this represents your position":""));
+    d.style.background=DC[grp];
+    g.appendChild(d);
+  }
+}
+
+function filterDots(f,btn){
+  document.querySelectorAll(".fbtn").forEach(function(b){
+    b.classList.remove("on");
+    b.setAttribute("aria-pressed","false");
+  });
+  if(btn){btn.classList.add("on");btn.setAttribute("aria-pressed","true");}
+  document.querySelectorAll(".dot").forEach(function(dot){
+    var idx=parseInt(dot.getAttribute("data-i")),grp=dot.getAttribute("data-g");
+    dot.style.outline="";
+    if(f==="all"){
+      dot.style.background=DC[grp];
+    } else if(f==="you"){
+      if(idx===71){dot.style.background="#d4b05a";dot.style.outline="3px solid #e8c870";dot.style.outlineOffset="2px";}
+      else{dot.style.background=DD[grp]||"#151520";}
+    } else {
+      dot.style.background=(grp===f)?DC[grp]:(DD[grp]||"#151520");
+    }
+  });
+  var di=document.getElementById("dinfo");
+  if(di)di.innerHTML=DI[f]||DI.all;
+}
+
+/* ── TIMELINE ────────────────────────────────────────────── */
+function buildTimeline(){
+  var el=document.getElementById("tl");
+  if(!el)return;
+  var W=Math.max(el.offsetWidth-32,260),H=110,n=TL.length,minP=22,maxP=33;
+  var svg='<svg width="100%" height="'+(H+30)+'" viewBox="0 0 '+W+' '+(H+30)+'" style="overflow:visible" role="presentation">';
+  [24,26,28,30,32].forEach(function(p){
+    var y=H-((p-minP)/(maxP-minP))*H;
+    svg+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'" stroke="#2a2a3e" stroke-width="1"/>';
+    svg+='<text x="'+(W+5)+'" y="'+(y+4)+'" fill="#4a4a6a" font-size="9" font-family="monospace">'+p+'%</text>';
+  });
+  var area="M0,"+H,line="";
+  TL.forEach(function(d,i){
+    var x=(i/(n-1))*W,y=H-((d.p-minP)/(maxP-minP))*H;
+    area+=" L"+x+","+y;line+=(i===0?"M":"L")+x+","+y+" ";
+  });
+  area+=" L"+W+","+H+" Z";
+  svg+='<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f87171" stop-opacity=".2"/><stop offset="100%" stop-color="#f87171" stop-opacity="0"/></linearGradient></defs>';
+  svg+='<path d="'+area+'" fill="url(#ag)"/>';
+  svg+='<path d="'+line+'" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linejoin="round"/>';
+  TL.forEach(function(d,i){
+    var x=(i/(n-1))*W,y=H-((d.p-minP)/(maxP-minP))*H,last=(i===n-1);
+    svg+='<circle cx="'+x+'" cy="'+y+'" r="'+(last?6:3)+'" fill="'+(last?"#f87171":"#f8717166")+'" aria-label="'+d.y+': '+d.p+'%"/>';
+    if(i%3===0||last)svg+='<text x="'+x+'" y="'+(H+22)+'" fill="#4a4a6a" font-size="9" font-family="monospace" text-anchor="middle">'+d.y+'</text>';
+    if(last)svg+='<text x="'+(x-8)+'" y="'+(y-12)+'" fill="#f87171" font-size="12" font-family="monospace" font-weight="bold" text-anchor="end">'+d.p+'% ▲</text>';
+  });
+  svg+='</svg>';
+  el.innerHTML=svg;
+}
+
+/* ── BILLIONAIRE BARS ────────────────────────────────────── */
+function buildBBars(){
+  var el=document.getElementById("bbars");
+  if(!el)return;
+  var maxW=0;
+  BB.forEach(function(b){if(b.w>maxW)maxW=b.w;});
+  BB.forEach(function(b,i){
+    var pct=(b.w/maxW)*100,d=document.createElement("div");
+    d.className="bbar-row";
+    d.setAttribute("role","listitem");
+    d.setAttribute("tabindex","0");
+    d.setAttribute("aria-label",b.n+", $"+b.w+" billion. Press Enter to see comparisons.");
+    d.innerHTML=
+      '<div class="bbar-meta">'+
+        '<span style="font-size:var(--fs-base)">'+b.n+'</span>'+
+        '<span style="font-size:var(--fs-base);color:'+b.c+';font-family:monospace">$'+b.w+'B</span>'+
+      '</div>'+
+      '<div class="bbar-track">'+
+        '<div data-w="'+pct+'" class="bbar-fill" style="background:'+b.c+';opacity:.85;transition-delay:'+(i*0.08)+'s"></div>'+
+      '</div>';
+    (function(bdata){
+      d.addEventListener("click",function(){showBCtx(bdata);});
+      d.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();showBCtx(bdata);}});
+    })(b);
+    el.appendChild(d);
+  });
+  setTimeout(function(){
+    el.querySelectorAll("[data-w]").forEach(function(f){f.style.width=f.getAttribute("data-w")+"%";});
+  },400);
+}
+function showBCtx(b){
+  var el=document.getElementById("bctx");
+  if(!el)return;
+  el.innerHTML=
+    '<strong style="color:'+b.c+'">'+b.n+' — $'+b.w+' billion</strong><br>'+
+    '· Equal to the combined net worth of '+fmtN(b.w*1e9/192084)+' median American households<br>'+
+    '· That is '+fmtN(b.w*1e9/600000)+'× a $600K net worth<br>'+
+    '· Could give every American approximately $'+fmtN(b.w*1e9/335e6)+' each<br>'+
+    '· At a 7% annual return, earns approximately $'+fmtN(b.w*1e9*0.07/(365*24*3600))+' per second';
+}
+
+/* ── CALCULATOR ──────────────────────────────────────────── */
+function runCalc(){
+  var nw=parseFloat(document.getElementById("inNW").value)||0;
+  var age=parseInt(document.getElementById("inAge").value)||33;
+  var ck=getCohort(age),co=COHORTS[ck]||COHORTS["30-34"];
+  var op=Math.round(estPerc(nw));
+  var coPct="Below 25th";
+  if(nw>=co.top1)coPct="Top 1%";
+  else if(nw>=co.p90)coPct="90th–99th";
+  else if(nw>=co.p75)coPct="75th–90th";
+  else if(nw>=co.med)coPct="50th–75th";
+  else if(nw>=co.p25)coPct="25th–50th";
+  var vsM=nw>0?(nw/192084).toFixed(1):"0",toTop1=Math.max(0,13666778-nw);
+  var cr=document.getElementById("cresults");
+  if(cr)cr.innerHTML=
+    '<div class="cr"><div class="crl">Overall percentile</div><div class="crv">~'+op+'th</div><div class="crs">vs. all U.S. households of all ages</div></div>'+
+    '<div class="cr"><div class="crl">Your age cohort ('+ck+')</div><div class="crv" style="font-size:clamp(16px,3vw,22px)">'+coPct+'</div><div class="crs">vs. households your age</div></div>'+
+    '<div class="cr"><div class="crl">vs. Median American</div><div class="crv">'+vsM+'×</div><div class="crs">Median household = $192,084</div></div>'+
+    '<div class="cr"><div class="crl">Distance to top 1%</div><div class="crv" style="color:var(--muted);font-size:clamp(16px,3vw,22px)">'+(toTop1>0?fmt(toTop1):"You are there")+'</div><div class="crs">Top 1% starts at $13.7M</div></div>';
+  var thresholds=[
+    {l:"Bottom 10%",v:440,c:"#3a3a5a",note:"Near zero or negative"},
+    {l:"Median",v:192084,c:"#6b6b8a",note:"50th percentile"},
+    {l:"Cohort median ("+ck+")",v:co.med,c:"#8a7a4a",note:"Median for your age"},
+    {l:"You",v:nw,c:"#d4b05a",you:true,note:"Your net worth"},
+    {l:"Top 10%",v:1900000,c:"#fb923c",note:"90th percentile"},
+    {l:"Top 1%",v:13666778,c:"#4ade80",note:"99th percentile"},
+    {l:"Top 0.1%",v:61827166,c:"#c4b5fd",note:"99.9th percentile"},
+  ].sort(function(a,b){return a.v-b.v;});
+  var maxL=Math.log10(61827166),minL=Math.log10(440),cb=document.getElementById("cbars");
+  if(cb)cb.innerHTML=thresholds.map(function(t){
+    var lv=Math.log10(Math.max(t.v,1)),w=((lv-minL)/(maxL-minL))*100;
+    return '<div style="margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:5px;align-items:baseline;flex-wrap:wrap;gap:4px">'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<span style="font-size:var(--fs-sm);color:'+(t.you?"#d4b05a":"var(--muted)")+';font-weight:'+(t.you?700:400)+'">'+t.l+'</span>'+
+          '<span style="font-size:10px;color:var(--dim);font-family:monospace">'+t.note+'</span>'+
+        '</div>'+
+        '<span style="font-size:var(--fs-sm);color:'+t.c+';font-family:monospace">'+fmt(t.v)+'</span>'+
+      '</div>'+
+      '<div style="background:var(--bg3);border-radius:3px;height:'+(t.you?20:12)+'px;overflow:hidden" role="progressbar" aria-label="'+t.l+': '+fmt(t.v)+'" aria-valuenow="'+Math.round(w)+'" aria-valuemin="0" aria-valuemax="100">'+
+        '<div style="height:100%;border-radius:3px;background:'+(t.you?"linear-gradient(90deg,#d4b05a,#e8c870)":t.c)+';width:'+w+'%;opacity:'+(t.you?1:0.7)+'"></div>'+
+      '</div></div>';
+  }).join("");
+  var narr="";
+  if(nw<=0)narr="With zero or negative net worth, you are in the bottom 10% — a situation shared by millions carrying student debt or with no assets yet.";
+  else if(nw<50000)narr="Below the 25th percentile. Most of your wealth is likely in savings or a vehicle, with minimal investment assets.";
+  else if(nw<192084)narr="Between the 25th and 50th percentile — below the median, but with meaningful assets beginning to accumulate.";
+  else if(nw<1000000)narr="Above the median. You are doing better than most Americans, with wealth that is starting to generate its own returns.";
+  else if(nw<13666778)narr="Top 10% — a level where wealth compounds meaningfully, providing real financial security and options.";
+  else narr="Top 1% of American households. At this level, your wealth likely generates returns that exceed most people's annual income.";
+  var cohortNote=nw>co.med
+    ?" Compared to your age cohort ("+ck+"), you are above the cohort median of "+fmt(co.med)+"."
+    :" Compared to your age cohort ("+ck+"), you are below the cohort median of "+fmt(co.med)+" — but wealth accumulation tends to accelerate with age.";
+  var cn=document.getElementById("cnarr");
+  if(cn)cn.innerHTML=narr+cohortNote;
+}
+
+/* ── SCROLL & INTERSECTION ───────────────────────────────── */
+function initScroll(){
+  window.addEventListener("scroll",function(){
+    var total=document.body.scrollHeight-window.innerHeight;
+    var pct=total>0?(window.scrollY/total*100):0;
+    var pf=document.getElementById("pf");
+    if(pf){pf.style.width=pct+"%";document.getElementById("pb").setAttribute("aria-valuenow",Math.round(pct));}
+  });
+  if(!window.IntersectionObserver){
+    triggerAll();return;
+  }
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting)return;
+      e.target.querySelectorAll("[data-w]").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%";});
+      e.target.querySelectorAll(".rbar").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%";});
+    });
+  },{threshold:0.15});
+  ["wbars","s4"].forEach(function(id){var el=document.getElementById(id);if(el)obs.observe(el);});
+}
+function triggerAll(){
+  document.querySelectorAll("[data-w]").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%";});
+  document.querySelectorAll(".rbar").forEach(function(el){el.style.width=el.getAttribute("data-w")+"%";});
+}
+
+/* ── THEME TOGGLE ────────────────────────────────────────── */
+function toggleTheme(){
+  var html=document.documentElement;
+  var btn=document.getElementById("theme-toggle");
+  var label=document.getElementById("theme-label");
+  var icon=btn.querySelector(".theme-icon");
+  if(html.classList.contains("light")){
+    html.classList.remove("light");
+    btn.setAttribute("aria-label","Switch to light mode");
+    icon.textContent="☀";
+    label.textContent="Light";
+    try{localStorage.setItem("lacunae-theme","dark");}catch(e){}
+  } else {
+    html.classList.add("light");
+    btn.setAttribute("aria-label","Switch to dark mode");
+    icon.textContent="☾";
+    label.textContent="Dark";
+    try{localStorage.setItem("lacunae-theme","light");}catch(e){}
+  }
+}
+function initTheme(){
+  var saved="";
+  try{saved=localStorage.getItem("lacunae-theme")||"";}catch(e){}
+  var preferLight=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches;
+  if(saved==="light"||(saved===""&&preferLight)){
+    document.documentElement.classList.add("light");
+    var btn=document.getElementById("theme-toggle");
+    var label=document.getElementById("theme-label");
+    if(btn){btn.setAttribute("aria-label","Switch to dark mode");btn.querySelector(".theme-icon").textContent="☾";label.textContent="Dark";}
+  }
+}
+
+/* ── INIT ────────────────────────────────────────────────── */
+window.addEventListener("load",function(){
+  initTheme();
+  buildTicker();
+  buildWBars();
+  buildDots();
+  buildTimeline();
+  buildBBars();
+  runCalc();
+  initScroll();
+});
+</script>
+</body>
+</html>
